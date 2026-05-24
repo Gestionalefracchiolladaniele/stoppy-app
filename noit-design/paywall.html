@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOIT — Paywall</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#06041A; display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:'DM Sans',sans-serif; }
+.phone {
+  width:393px; height:852px;
+  background:linear-gradient(160deg,#9272C2 0%,#6A4AAC 55%,#5C3E9C 100%);
+  border-radius:52px; border:10px solid #1a1838;
+  box-shadow:0 0 0 1.5px #2e2c50, 0 48px 96px rgba(0,0,0,0.8);
+  overflow:hidden; position:relative; display:flex; flex-direction:column;
+}
+.island { position:absolute; top:12px; left:50%; transform:translateX(-50%); width:126px; height:37px; background:#06041A; border-radius:20px; z-index:20; }
+.status { height:56px; padding:18px 28px 0; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; position:relative; z-index:5; }
+.status-time { font-size:15px; font-weight:600; color:rgba(255,255,255,0.9); }
+.status-icons { display:flex; gap:5px; align-items:center; }
+
+/* Noit animations */
+@keyframes breathe { 0%,100%{transform:scale(1) translateY(0)} 50%{transform:scale(1.032) translateY(-4px)} }
+@keyframes blink   { 0%,87%,100%{transform:scaleY(1)} 92%{transform:scaleY(0.07)} }
+@keyframes finL    { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(5deg)} }
+@keyframes finR    { 0%,100%{transform:rotate(8deg)}  50%{transform:rotate(-5deg)} }
+@keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+@keyframes wiggle  { 0%,100%{transform:rotate(0deg)} 25%{transform:rotate(5deg)} 75%{transform:rotate(-4deg)} }
+@keyframes sparkle { 0%,100%{opacity:0;transform:scale(0) rotate(0deg)} 50%{opacity:1;transform:scale(1) rotate(180deg)} }
+.noit-float      { animation:float 3.8s ease-in-out infinite; }
+.noit-body-group { animation:breathe 3.6s ease-in-out infinite; transform-origin:center 80%; }
+.noit-eye-group  { animation:blink 5s ease-in-out infinite; transform-origin:center; }
+.fin-left        { animation:finL 3.6s ease-in-out infinite; transform-origin:70% 50%; }
+.fin-right       { animation:finR 3.6s ease-in-out infinite; transform-origin:30% 50%; }
+.antenna-group   { animation:wiggle 4s ease-in-out infinite; transform-origin:100px 26px; }
+.sp1 { animation:sparkle 2.4s ease-in-out infinite; }
+.sp2 { animation:sparkle 2.4s 0.8s ease-in-out infinite; }
+.sp3 { animation:sparkle 2.4s 1.6s ease-in-out infinite; }
+
+/* Hero */
+.hero { flex-shrink:0; height:295px; position:relative; display:flex; flex-direction:column; align-items:center; overflow:hidden; }
+.hero-glow { position:absolute; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,0.2) 0%,transparent 62%); top:-60px; left:50%; transform:translateX(-50%); pointer-events:none; }
+.hero-glow2 { position:absolute; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle,rgba(245,224,96,0.15) 0%,transparent 65%); top:20px; left:58%; transform:translateX(-50%); pointer-events:none; }
+.hero-label { position:relative; z-index:2; margin-top:16px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); border-radius:20px; padding:5px 16px; font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.9); }
+
+/* Bottom white/lavender card */
+.card {
+  flex:1;
+  background:linear-gradient(160deg, rgba(255,255,255,0.94) 0%, rgba(238,228,255,0.9) 100%);
+  border-radius:30px 30px 0 0;
+  border-top:1px solid rgba(255,255,255,0.7);
+  padding:20px 22px 28px;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.card-title { font-size:24px; font-weight:700; color:#2B1A52; text-align:center; line-height:1.25; margin-top:4px; }
+.card-title span { color:#7B5BA9; }
+.card-sub { font-size:13.5px; color:rgba(43,26,82,0.52); text-align:center; margin-top:6px; }
+
+/* Plans */
+.plans { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
+.plan {
+  border:1.5px solid rgba(155,125,200,0.2);
+  border-radius:18px; padding:14px 18px;
+  display:flex; align-items:center; justify-content:space-between;
+  cursor:pointer; position:relative;
+  background:rgba(255,255,255,0.7);
+  transition:all 0.2s;
+}
+.plan.selected { border-color:#7B5BA9; background:rgba(123,91,169,0.08); }
+.plan-left { display:flex; flex-direction:column; gap:2px; }
+.plan-name { font-size:15px; font-weight:600; color:#2B1A52; }
+.plan-desc { font-size:12px; color:rgba(43,26,82,0.5); }
+.plan-price { font-size:17px; font-weight:700; color:#5C3E9C; }
+.plan-price small { font-size:12px; font-weight:400; color:rgba(43,26,82,0.5); }
+.badge-pop { position:absolute; top:-10px; right:16px; background:#7B5BA9; color:white; font-size:10px; font-weight:700; letter-spacing:0.5px; padding:3px 10px; border-radius:10px; text-transform:uppercase; }
+
+/* Perks */
+.perks { display:flex; flex-direction:column; gap:8px; margin-top:18px; }
+.perk { display:flex; align-items:center; gap:10px; font-size:13.5px; color:rgba(43,26,82,0.78); }
+.perk-dot { width:20px; height:20px; border-radius:50%; background:rgba(92,62,156,0.1); border:1px solid rgba(92,62,156,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* CTA */
+.cta-area { margin-top:auto; padding-top:18px; display:flex; flex-direction:column; }
+.btn-cta { width:100%; padding:18px; background:linear-gradient(135deg,#9B6DD8,#7B5BA9); color:white; font-family:'DM Sans',sans-serif; font-size:17px; font-weight:700; border:none; border-radius:22px; cursor:pointer; box-shadow:0 10px 30px rgba(123,91,169,0.4); transition:transform 0.12s; }
+.btn-cta:active { transform:scale(0.97); }
+.legal { font-size:11px; color:rgba(43,26,82,0.4); text-align:center; margin-top:10px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="status">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="rgba(255,255,255,0.85)"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0.5" width="3" height="11.5" rx="1"/><rect x="13.5" y="0.5" width="3" height="11.5" rx="1" opacity="0.3"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="rgba(255,255,255,0.85)"><path d="M8 9.5a1.3 1.3 0 110 2.6A1.3 1.3 0 018 9.5z"/><path d="M4.4 7.1a5 5 0 017.2 0l1.2-1.2a6.8 6.8 0 00-9.6 0z"/><path d="M1.5 4.2a9.2 9.2 0 0113 0L15.7 3A11 11 0 00.3 3z"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3.5" stroke="rgba(255,255,255,0.5)"/><rect x="1.5" y="1.5" width="17" height="9" rx="2.5" fill="rgba(255,255,255,0.85)"/><path d="M24 4.5v3a1.5 1.5 0 000-3z" fill="rgba(255,255,255,0.5)"/></svg>
+    </div>
+  </div>
+
+  <!-- Hero: Noit with crown, consistent anatomy -->
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-label">✦ Noit Premium</div>
+    <svg width="172" height="162" viewBox="-5 -16 210 232" fill="none" style="position:relative;z-index:2;margin-top:4px;">
+      <!-- Sparkles -->
+      <g class="sp1" style="transform-origin:18px 55px"><path d="M18 47l2.5 8 2.5-8 8-2.5-8-2.5L18 33l-2.5 8-8 2.5z" fill="#F5E060"/></g>
+      <g class="sp2" style="transform-origin:182px 36px"><path d="M182 28l2 7 2-7 7-2-7-2L182 19l-2 7-7 2z" fill="rgba(255,255,255,0.75)"/></g>
+      <g class="sp3" style="transform-origin:165px 155px"><path d="M165 148l1.5 5.5 1.5-5.5 5.5-1.5-5.5-1.5L165 139l-1.5 5.5-5.5 1.5z" fill="rgba(255,200,220,0.9)"/></g>
+      <g class="noit-float">
+        <ellipse cx="100" cy="210" rx="50" ry="8" fill="#A484D4" opacity="0.2"/>
+        <g class="noit-body-group">
+          <g class="fin-left"><ellipse cx="28" cy="112" rx="26" ry="15" fill="#A484D4" transform="rotate(-25 28 112)"/><ellipse cx="28" cy="112" rx="18" ry="10" fill="#C8B4F4" transform="rotate(-25 28 112)"/></g>
+          <g class="fin-right"><ellipse cx="172" cy="112" rx="26" ry="15" fill="#A484D4" transform="rotate(25 172 112)"/><ellipse cx="172" cy="112" rx="18" ry="10" fill="#C8B4F4" transform="rotate(25 172 112)"/></g>
+          <!-- Body -->
+          <ellipse cx="100" cy="108" rx="78" ry="86" fill="#BCA8EE"/>
+          <!-- Ear bumps -->
+          <ellipse cx="70" cy="26" rx="22" ry="20" fill="#BCA8EE"/>
+          <ellipse cx="130" cy="26" rx="22" ry="20" fill="#BCA8EE"/>
+          <!-- Crown (over ear bumps) -->
+          <path d="M68 50 L77 34 L90 48 L100 28 L110 48 L123 34 L132 50 Z" fill="#F5E060"/>
+          <path d="M68 50 h64 v7 a4 4 0 01-4 4 H72 a4 4 0 01-4-4z" fill="#E8C830"/>
+          <circle cx="77" cy="34" r="4.5" fill="#FFF4A0"/>
+          <circle cx="100" cy="28" r="4.5" fill="#FFF4A0"/>
+          <circle cx="123" cy="34" r="4.5" fill="#FFF4A0"/>
+          <!-- Antenna (behind crown, subtle) -->
+          <g class="antenna-group" style="opacity:0.6;">
+            <path d="M 100 26 Q 108 14 114 10" stroke="#B090D8" stroke-width="3" stroke-linecap="round" fill="none"/>
+          </g>
+          <!-- Belly -->
+          <ellipse cx="100" cy="118" rx="50" ry="57" fill="#D8C8FA" opacity="0.6"/>
+          <!-- Cheeks -->
+          <ellipse cx="62" cy="120" rx="14" ry="9" fill="#F2B8CC" opacity="0.55"/>
+          <ellipse cx="138" cy="120" rx="14" ry="9" fill="#F2B8CC" opacity="0.55"/>
+          <!-- Eyebrows — raised (excited/happy) -->
+          <path d="M 63 79 Q 79 67 93 79" stroke="#1E1240" stroke-width="2.8" stroke-linecap="round" fill="none" opacity="0.42"/>
+          <path d="M 107 79 Q 121 67 137 79" stroke="#1E1240" stroke-width="2.8" stroke-linecap="round" fill="none" opacity="0.42"/>
+          <!-- Eyes: happy ^^ -->
+          <g class="noit-eye-group">
+            <path d="M 64 98 Q 79 84 93 98" stroke="#1E1240" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+            <path d="M 107 98 Q 121 84 135 98" stroke="#1E1240" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+          </g>
+          <!-- Kirby mouth — big happy smile -->
+          <ellipse cx="100" cy="122" rx="14" ry="10" fill="#1E1240"/>
+          <ellipse cx="100" cy="124" rx="11" ry="8" fill="#F5A0B8"/>
+          <!-- Feet -->
+          <ellipse cx="78" cy="188" rx="20" ry="11" fill="#A484D4"/>
+          <ellipse cx="122" cy="188" rx="20" ry="11" fill="#A484D4"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- White/lavender card -->
+  <div class="card">
+    <div class="card-title">Unlock <span>full Noit</span></div>
+    <div class="card-sub">Start free for 7 days. Cancel anytime.</div>
+    <div class="plans">
+      <div class="plan" id="plan-annual" onclick="selectPlan('annual')">
+        <div class="badge-pop">Best value</div>
+        <div class="plan-left"><div class="plan-name">Annual</div><div class="plan-desc">Billed once a year</div></div>
+        <div class="plan-price">€3.99 <small>/mo</small></div>
+      </div>
+      <div class="plan selected" id="plan-monthly" onclick="selectPlan('monthly')">
+        <div class="plan-left"><div class="plan-name">Monthly</div><div class="plan-desc">Billed every month</div></div>
+        <div class="plan-price">€7.99 <small>/mo</small></div>
+      </div>
+    </div>
+    <div class="perks">
+      <div class="perk"><div class="perk-dot"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#7B5BA9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Unlimited daily sessions with Noit</div>
+      <div class="perk"><div class="perk-dot"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#7B5BA9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Deep mood insights &amp; weekly reports</div>
+      <div class="perk"><div class="perk-dot"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#7B5BA9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Personalized Noit color &amp; name</div>
+    </div>
+    <div class="cta-area">
+      <button class="btn-cta">Start 7-day free trial</button>
+      <div class="legal">No charge today · Renews automatically · Cancel anytime</div>
+    </div>
+  </div>
+</div>
+<script>
+function selectPlan(id) {
+  document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+  document.getElementById('plan-' + id).classList.add('selected');
+}
+</script>
+</body>
+</html>

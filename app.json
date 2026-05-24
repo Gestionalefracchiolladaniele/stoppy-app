@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Cartomanzia",
+    "slug": "cartomanzia",
+    "owner": "praticantisokagakkai",
+    "version": "1.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "c3a711e8-1d8a-496d-9db3-4a2139c6c322"
+      }
+    },
+    "scheme": "cartomanzia",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#140d2e"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-router",
+      "@react-native-google-signin/google-signin"
+    ]
+  }
+}
