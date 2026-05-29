@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Alert, Dimensions, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from 'expo-auth-session';
+import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 
 import { Noit } from '@/components/Noit';
 import { PurpleBg } from '@/components/PurpleBg';
 import { supabase } from '@/lib/supabase';
 
-WebBrowser.maybeCompleteAuthSession();
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  scopes: ['email', 'profile'],
+});
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,40 +29,28 @@ export default function AuthScreen() {
     if (signingIn) return;
     setSigningIn(true);
     try {
-      const redirectTo =
-        Platform.OS === 'web'
-          ? typeof window !== 'undefined'
-            ? window.location.origin
-            : 'http://localhost:8081'
-          : makeRedirectUri({ scheme: 'noit', path: 'auth/callback' });
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
+      if (!idToken) throw new Error('No ID token returned from Google');
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
-        options: { redirectTo, skipBrowserRedirect: Platform.OS !== 'web' },
+        token: idToken,
       });
+
       if (error) {
         Alert.alert('Sign-in error', error.message);
-        return;
-      }
-
-      if (Platform.OS !== 'web' && data.url) {
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-        if (result.type === 'success') {
-          const raw = result.url.includes('#')
-            ? result.url.split('#')[1]
-            : result.url.split('?')[1] ?? '';
-          const params = new URLSearchParams(raw);
-          const accessToken = params.get('access_token');
-          const refreshToken = params.get('refresh_token');
-          if (accessToken) {
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken ?? '',
-            });
-          }
-        }
       }
     } catch (e: any) {
+      if (isErrorWithCode(e)) {
+        if (e.code === statusCodes.SIGN_IN_CANCELLED) return;
+        if (e.code === statusCodes.IN_PROGRESS) return;
+        if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          Alert.alert('Error', 'Google Play Services not available.');
+          return;
+        }
+      }
       Alert.alert('Error', e?.message ?? 'Sign-in failed');
     } finally {
       setSigningIn(false);

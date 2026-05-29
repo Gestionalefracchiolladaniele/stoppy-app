@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Cartomanzia",
-    "slug": "cartomanzia",
+    "name": "Noit",
+    "slug": "noit",
     "owner": "praticantisokagakkai",
     "version": "1.0.0",
     "extra": {
@@ -9,7 +9,7 @@
         "projectId": "c3a711e8-1d8a-496d-9db3-4a2139c6c322"
       }
     },
-    "scheme": "cartomanzia",
+    "scheme": "noit",
     "platforms": [
       "ios",
       "android",
@@ -23,9 +23,25 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "android": {
+      "package": "com.noit.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#5C3E9C"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.noit.app",
+      "supportsTablet": false
+    },
     "plugins": [
       "expo-router",
-      "@react-native-google-signin/google-signin"
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.PLACEHOLDER"
+        }
+      ]
     ]
   }
 }
