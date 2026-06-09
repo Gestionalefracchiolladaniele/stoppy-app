@@ -15,9 +15,9 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { Noit } from '@/components/Noit';
+import { Stoppy as Noit } from '@/components/Stoppy';
 import { PaywallSheet } from '@/components/PaywallModal';
-import { PurpleBg } from '@/components/PurpleBg';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { useAuthStore } from '@/lib/auth-store';
 import type { CravingTime, FeelingTopic } from '@/types';
 
@@ -38,8 +38,8 @@ const TOPICS: { id: FeelingTopic; label: string }[] = [
 
 const CRAVING_TIMES: { id: CravingTime; icon: string; name: string; desc: string }[] = [
   { id: 'morning', icon: '🌅', name: 'Morning', desc: '7 – 10 AM · Start clear' },
-  { id: 'afternoon', icon: '☀️', name: 'Afternoon', desc: '12 – 5 PM · Mid-day craving' },
-  { id: 'evening', icon: '🌙', name: 'Evening', desc: '7 – 11 PM · Night cravings' },
+  { id: 'afternoon', icon: '☀️', name: 'Afternoon', desc: '12 – 5 PM · Mid-day urges' },
+  { id: 'evening', icon: '🌙', name: 'Evening', desc: '7 – 11 PM · Late-night urges' },
 ];
 
 const currentYear = new Date().getFullYear();
@@ -64,7 +64,7 @@ export default function OnboardingScreen() {
 
   const handleContinueName = () => {
     if (!name.trim()) {
-      Alert.alert('Almost there', 'What should Noit call you?');
+      Alert.alert('Almost there', 'What should Stoppy call you?');
       return;
     }
     const year = parseInt(birthYear, 10);
@@ -75,8 +75,8 @@ export default function OnboardingScreen() {
     const age = currentYear - year;
     if (age < 18) {
       Alert.alert(
-        'Noit is for adults',
-        "Noit is for ages 18 and up. Come back when you're ready 🌊",
+        'Stoppy is for adults',
+        "Stoppy is for ages 18 and up. Come back when you're ready 🌿",
       );
       return;
     }
@@ -224,11 +224,11 @@ function Step1Welcome({ onNext }: { onNext: () => void }) {
       </View>
       <Text style={styles.eyebrow}>Your daily companion</Text>
       <Text style={styles.headline}>
-        Hi, I'm <Text style={styles.headlineEm}>Noit</Text>.{'\n'}Nice to meet you.
+        Hi, I'm <Text style={styles.headlineEm}>Stoppy</Text>.{'\n'}Nice to meet you.
       </Text>
       <Text style={styles.sub}>
-        A 10-minute daily ritual to check in with your cravings — through conversation, reflection,
-        and a little magic.
+        A calm daily ritual for when the urge hits — through conversation, breath, and a steady
+        presence that sits with you.
       </Text>
       <Dots active={0} total={7} />
       <View style={styles.actions}>
@@ -265,15 +265,15 @@ function Step2HowItWorks({ onBack, onNext }: { onBack: () => void; onNext: () =>
           desc="A short session every day — morning, noon, or evening."
           icon={
             <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-              <Circle cx="12" cy="12" r="9" stroke="#9B7DC8" strokeWidth={2} />
-              <Path d="M12 8v4l3 3" stroke="#9B7DC8" strokeWidth={2} strokeLinecap="round" />
+              <Circle cx="12" cy="12" r="9" stroke="#38C97A" strokeWidth={2} />
+              <Path d="M12 8v4l3 3" stroke="#38C97A" strokeWidth={2} strokeLinecap="round" />
             </Svg>
           }
         />
         <FeatureCard
           tint="b"
-          title="Talk to Noit"
-          desc="Share what you crave. Noit listens, reflects, and feeds on it."
+          title="Talk to Stoppy"
+          desc="Share what set off the urge. Stoppy listens and helps you ride it out."
           icon={
             <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
               <Rect x="3" y="3" width="18" height="18" rx="5" stroke="rgba(80,200,160,0.9)" strokeWidth={2} />
@@ -342,7 +342,7 @@ function Step3Name({
       <TextInput
         style={styles.nameInput}
         placeholder="Your name…"
-        placeholderTextColor="rgba(43,26,82,0.3)"
+        placeholderTextColor="rgba(15,34,24,0.3)"
         value={name}
         onChangeText={setName}
         autoCapitalize="words"
@@ -350,13 +350,13 @@ function Step3Name({
       <TextInput
         style={[styles.nameInput, { marginTop: 12 }]}
         placeholder="Birth year (e.g. 2000)"
-        placeholderTextColor="rgba(43,26,82,0.3)"
+        placeholderTextColor="rgba(15,34,24,0.3)"
         value={birthYear}
         onChangeText={(v) => setBirthYear(v.replace(/\D/g, '').slice(0, 4))}
         keyboardType="number-pad"
         maxLength={4}
       />
-      <Text style={styles.nameHint}>Noit is for ages 18+ · stays private 🤫</Text>
+      <Text style={styles.nameHint}>Stoppy is for ages 18+ · stays private 🤫</Text>
       <Dots active={2} total={7} />
       <View style={styles.actions}>
         <BtnMain label="Continue" onPress={onNext} />
@@ -389,7 +389,7 @@ function Step4Time({
           { fontSize: 26, marginTop: 10, alignSelf: 'flex-start', textAlign: 'left' },
         ]}
       >
-        When does your{'\n'}craving hit hardest?
+        When does the{'\n'}urge hit hardest?
       </Text>
       <Text style={[styles.sub, { textAlign: 'left', alignSelf: 'flex-start', marginTop: 6 }]}>
         Pick the time that feels most familiar.
@@ -448,7 +448,7 @@ function Step5Topics({
         What do you feel{'\n'}most often?
       </Text>
       <Text style={[styles.sub, { marginTop: 6 }]}>
-        Pick the feelings that trigger your cravings — you can change this later.
+        Pick the feelings that tend to trigger the urge — you can change this later.
       </Text>
       <View style={styles.chipsWrap}>
         {TOPICS.map((t) => {
@@ -536,7 +536,7 @@ function Step6Disclaimer({
             )}
           </View>
           <Text style={styles.checkText}>
-            I understand Noit is{' '}
+            I understand Stoppy is{' '}
             <Text style={{ fontWeight: '700' }}>not a medical service</Text> and does not replace
             professional advice.
           </Text>
@@ -625,7 +625,7 @@ function FeatureCard({
 }) {
   const bg =
     tint === 'a'
-      ? 'rgba(155,125,200,0.25)'
+      ? 'rgba(56,201,122,0.25)'
       : tint === 'b'
         ? 'rgba(58,142,124,0.25)'
         : 'rgba(200,130,60,0.22)';
@@ -643,7 +643,7 @@ function FeatureCard({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#6A4AAC',
+    backgroundColor: '#1F6B4D',
     overflow: 'hidden',
   },
   glowTop: {
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   btnMainText: {
-    color: '#4A2A80',
+    color: '#1A8044',
     fontSize: 17,
     fontWeight: '700',
   },
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 22,
     fontSize: 18,
-    color: '#2B1A52',
+    color: '#0F2218',
     textAlign: 'center',
     marginTop: 22,
     shadowColor: '#000',
@@ -827,20 +827,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   timeIconSel: {
-    backgroundColor: 'rgba(92,62,156,0.1)',
+    backgroundColor: 'rgba(31,107,77,0.1)',
   },
   timeName: {
     fontSize: 15,
     fontWeight: '600',
   },
   timeNameDef: { color: 'white' },
-  timeNameSel: { color: '#2B1A52' },
+  timeNameSel: { color: '#0F2218' },
   timeDesc: {
     fontSize: 12.5,
     marginTop: 1,
   },
   timeDescDef: { color: 'rgba(255,255,255,0.48)' },
-  timeDescSel: { color: 'rgba(43,26,82,0.52)' },
+  timeDescSel: { color: 'rgba(15,34,24,0.52)' },
   chipsWrap: {
     width: '100%',
     flexDirection: 'row',
@@ -867,7 +867,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.75)',
   },
   chipTextSel: {
-    color: '#4A2A80',
+    color: '#1A8044',
     fontWeight: '600',
   },
   disclaimerWrap: {
@@ -896,8 +896,8 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   checkboxOn: {
-    backgroundColor: '#7B5BA9',
-    borderColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
+    borderColor: '#38C97A',
   },
   checkText: {
     flex: 1,

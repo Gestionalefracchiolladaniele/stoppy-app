@@ -3,8 +3,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-const ACTIVE = '#5C3E9C';
-const INACTIVE = 'rgba(92,62,156,0.38)';
+const ACTIVE = '#1A8044';
+const INACTIVE = 'rgba(31,107,77,0.38)';
 
 type TabDef = {
   id: string;

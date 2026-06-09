@@ -2,17 +2,18 @@ import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { NoitMini, noitVariantForMood } from '@/components/NoitMini';
-import { PurpleBg } from '@/components/PurpleBg';
+import { StoppyMini as NoitMini, stoppyVariantForIntensity as noitVariantForMood } from '@/components/StoppyMini';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { formatDuration } from '@/lib/format';
 import type { Session } from '@/types';
 
+// Urge intensity labels (1 = barely there … 5 = overwhelming).
 const MOOD_LABEL: Record<number, string> = {
-  1: 'Hard',
-  2: 'Low',
-  3: 'OK',
-  4: 'Good',
-  5: 'Great',
+  1: 'Barely',
+  2: 'Mild',
+  3: 'Medium',
+  4: 'Strong',
+  5: 'Intense',
 };
 
 export interface SessionDetailModalProps {
@@ -37,11 +38,12 @@ export function SessionDetailModal({ session, visible, onClose }: SessionDetailM
   });
   const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   const isBreathe = session.mode === 'breathe';
-  const delta = session.mood_after - session.mood_before;
+  // Urge intensity: lower-after = relief, so positive (good/green) delta is before − after.
+  const delta = session.mood_before - session.mood_after;
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' }}>
+      <View style={{ flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' }}>
         <PurpleBg />
         <ScrollView
           style={{ flex: 1 }}
@@ -74,7 +76,7 @@ export function SessionDetailModal({ session, visible, onClose }: SessionDetailM
           <View style={styles.card}>
             {/* Food / title */}
             <Text style={styles.title}>
-              {session.food || (isBreathe ? 'Breathing session' : 'Talked with Noit')}
+              {session.trigger || (isBreathe ? 'Breathing session' : 'Talked with Stoppy')}
             </Text>
 
             {/* Mood before → after row */}
@@ -89,7 +91,7 @@ export function SessionDetailModal({ session, visible, onClose }: SessionDetailM
                 <Svg width={28} height={20} viewBox="0 0 28 20" fill="none">
                   <Path
                     d="M2 10 L24 10 M18 4 L24 10 L18 16"
-                    stroke="#7B5BA9"
+                    stroke="#38C97A"
                     strokeWidth={2.5}
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -119,12 +121,12 @@ export function SessionDetailModal({ session, visible, onClose }: SessionDetailM
                 <Text style={styles.statVal}>
                   {delta > 0 ? `+${delta}` : delta === 0 ? '—' : delta}
                 </Text>
-                <Text style={styles.statLbl}>Mood shift</Text>
+                <Text style={styles.statLbl}>Urge shift</Text>
               </View>
             </View>
 
             {/* Recap */}
-            <Text style={styles.section}>Noit's recap</Text>
+            <Text style={styles.section}>Stoppy's recap</Text>
             <View style={styles.recapBox}>
               <Text style={styles.recapText}>
                 {session.recap_text || 'No recap was generated for this session.'}
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#2B1A52',
+    color: '#0F2218',
     textAlign: 'center',
     textTransform: 'capitalize',
   },
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 22,
-    backgroundColor: 'rgba(123,91,169,0.06)',
+    backgroundColor: 'rgba(56,201,122,0.06)',
     borderRadius: 18,
     paddingVertical: 16,
     paddingHorizontal: 12,
@@ -207,11 +209,11 @@ const styles = StyleSheet.create({
   moodLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: 'rgba(43,26,82,0.5)',
+    color: 'rgba(15,34,24,0.5)',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
-  moodValue: { fontSize: 14, fontWeight: '700', color: '#2B1A52' },
+  moodValue: { fontSize: 14, fontWeight: '700', color: '#0F2218' },
   moodArrow: { alignItems: 'center', gap: 4, paddingHorizontal: 4 },
   deltaText: { fontSize: 13, fontWeight: '700' },
   deltaUp: { color: '#1A6B44' },
@@ -219,44 +221,44 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
   statCard: {
     flex: 1,
-    backgroundColor: 'rgba(123,91,169,0.06)',
+    backgroundColor: 'rgba(56,201,122,0.06)',
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
     gap: 3,
   },
-  statVal: { fontSize: 20, fontWeight: '700', color: '#2B1A52' },
-  statLbl: { fontSize: 11, color: 'rgba(43,26,82,0.55)', fontWeight: '500' },
+  statVal: { fontSize: 20, fontWeight: '700', color: '#0F2218' },
+  statLbl: { fontSize: 11, color: 'rgba(15,34,24,0.55)', fontWeight: '500' },
   section: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#5C3E9C',
+    color: '#1A8044',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     marginTop: 22,
     marginBottom: 10,
   },
   recapBox: {
-    backgroundColor: 'rgba(123,91,169,0.08)',
+    backgroundColor: 'rgba(56,201,122,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(123,91,169,0.18)',
+    borderColor: 'rgba(56,201,122,0.18)',
     borderRadius: 18,
     padding: 16,
   },
-  recapText: { fontSize: 14, lineHeight: 22, color: '#2B1A52' },
+  recapText: { fontSize: 14, lineHeight: 22, color: '#0F2218' },
   convo: { gap: 8 },
   bubble: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 16, maxWidth: '85%' },
   bubbleUser: {
     alignSelf: 'flex-end',
-    backgroundColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
     borderBottomRightRadius: 4,
   },
   bubbleNoit: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(123,91,169,0.1)',
+    backgroundColor: 'rgba(56,201,122,0.1)',
     borderBottomLeftRadius: 4,
   },
   bubbleText: { fontSize: 14, lineHeight: 20 },
   bubbleTextUser: { color: 'white' },
-  bubbleTextNoit: { color: '#2B1A52' },
+  bubbleTextNoit: { color: '#0F2218' },
 });

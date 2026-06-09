@@ -32,7 +32,7 @@ export async function fetchSession(sessionId: string): Promise<Session | null> {
  */
 export async function insertCompletedSession(args: {
   user_id: string;
-  food: string;
+  trigger: string;
   mode: CravingMode;
   mood_before: Mood;
   mood_after: Mood;
@@ -40,12 +40,14 @@ export async function insertCompletedSession(args: {
   recap_text: string;
   messages: Message[];
   created_at: string;
+  /** Extra per-session metadata (e.g. { balanceRounds }). Stored in the jsonb column. */
+  context?: Record<string, unknown>;
 }): Promise<Session> {
   const { data, error } = await supabase
     .from('sessions')
     .insert({
       user_id: args.user_id,
-      food: args.food,
+      trigger: args.trigger,
       mode: args.mode,
       mood_before: args.mood_before,
       mood_after: args.mood_after,
@@ -53,6 +55,7 @@ export async function insertCompletedSession(args: {
       recap_text: args.recap_text,
       messages: args.messages,
       created_at: args.created_at,
+      context: args.context ?? {},
     })
     .select()
     .single();
@@ -72,16 +75,16 @@ export async function fetchPriorSessionSummaries(
 ): Promise<PriorSessionSummary[]> {
   const { data, error } = await supabase
     .from('sessions')
-    .select('created_at, food, duration, mood_before, recap_text')
+    .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
   if (error) throw error;
 
-  return (data ?? []).map((row) => ({
+  return (data ?? []).map((row: any) => ({
     date: row.created_at.split('T')[0],
-    food: row.food,
+    trigger: row.trigger ?? row.food ?? '',
     duration: row.duration,
     mood_before: row.mood_before as Mood,
     summary: row.recap_text?.slice(0, 200) ?? '',
@@ -191,7 +194,7 @@ export async function fetchTopFoods(
 ): Promise<{ food: string; count: number }[]> {
   let q = supabase
     .from('sessions')
-    .select('food, mode')
+    .select('*')
     .eq('user_id', userId)
     .gte('created_at', since);
   if (mode) q = q.eq('mode', mode);
@@ -201,7 +204,7 @@ export async function fetchTopFoods(
 
   const counts: Record<string, number> = {};
   for (const row of data) {
-    const f = ((row as any).food as string)?.trim() || 'craving';
+    const f = (((row as any).trigger ?? (row as any).food) as string)?.trim() || 'urge';
     counts[f] = (counts[f] ?? 0) + 1;
   }
 
@@ -346,10 +349,13 @@ export async function fetchSessionStats(
     if (s.mode === 'feed') feed++; else breathe++;
     durSum += s.duration ?? 0;
 
+    // NOTE: mood_before/after now hold URGE INTENSITY (lower = better).
+    // Delta is computed `before − after` so a POSITIVE delta = relief = "good"
+    // and the existing insights UI (green = positive) reads correctly. (Poof playbook lesson 3.)
     if (s.mood_before) { beforeSum += s.mood_before; beforeN++; }
     if (s.mood_after) { afterSum += s.mood_after; afterN++; }
     if (s.mood_before && s.mood_after) {
-      deltaSum += s.mood_after - s.mood_before;
+      deltaSum += s.mood_before - s.mood_after;
       deltaN++;
     }
 
@@ -359,18 +365,18 @@ export async function fetchSessionStats(
     byWeekdayHour[wdIdx][hbIdx]++;
 
     if (s.mood_before && s.mood_after) {
-      bucketDeltas[hbIdx].sum += s.mood_after - s.mood_before;
+      bucketDeltas[hbIdx].sum += s.mood_before - s.mood_after;
       bucketDeltas[hbIdx].n++;
     }
 
-    const food = (s.food ?? '').trim() || (s.mode === 'breathe' ? 'breath' : 'craving');
+    const food = (((s as any).trigger ?? (s as any).food) ?? '').trim() || (s.mode === 'breathe' ? 'breath' : 'urge');
     foodCounts[food] = (foodCounts[food] ?? 0) + 1;
 
     if (!foodMood[food]) foodMood[food] = { beforeSum: 0, beforeN: 0, afterSum: 0, afterN: 0, deltaSum: 0, deltaN: 0 };
     const fm = foodMood[food];
     if (s.mood_before) { fm.beforeSum += s.mood_before; fm.beforeN++; }
     if (s.mood_after) { fm.afterSum += s.mood_after; fm.afterN++; }
-    if (s.mood_before && s.mood_after) { fm.deltaSum += s.mood_after - s.mood_before; fm.deltaN++; }
+    if (s.mood_before && s.mood_after) { fm.deltaSum += s.mood_before - s.mood_after; fm.deltaN++; }
   }
 
   const sinceDate = new Date(since);
@@ -420,6 +426,45 @@ export async function fetchSessionStats(
     bestTimeBucket,
     moodByFood,
   };
+}
+
+/**
+ * Clean-streak helpers (post-migration feature scaffolding).
+ * `last_relapse_date` on the users row anchors the clean streak.
+ */
+export async function fetchLastRelapseDate(userId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('last_relapse_date')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return (data as any).last_relapse_date ?? null;
+}
+
+/** Whole days since the last relapse. null = never recorded (treat as day 0 in UI). */
+export async function daysSinceRelapse(userId: string): Promise<number | null> {
+  const last = await fetchLastRelapseDate(userId);
+  if (!last) return null;
+  const start = new Date(`${last}T00:00:00`);
+  const now = new Date();
+  const ms = now.getTime() - start.getTime();
+  return Math.max(0, Math.floor(ms / (24 * 60 * 60 * 1000)));
+}
+
+/** Record a relapse (defaults to today, local date) — resets the clean streak. */
+export async function markRelapse(userId: string, date?: string): Promise<void> {
+  const ymd =
+    date ??
+    (() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })();
+  const { error } = await supabase
+    .from('users')
+    .update({ last_relapse_date: ymd })
+    .eq('id', userId);
+  if (error) throw error;
 }
 
 export async function fetchMoodHistory(userId: string, days = 30): Promise<DailyMood[]> {

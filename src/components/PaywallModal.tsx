@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { Noit } from '@/components/Noit';
-import { PurpleBg } from '@/components/PurpleBg';
+import { Stoppy as Noit } from '@/components/Stoppy';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 
 type Plan = 'annual' | 'monthly';
 
@@ -13,9 +13,9 @@ const PLANS: Record<Plan, { name: string; desc: string; price: string; per: stri
 };
 
 const PERKS = [
-  'Unlimited daily sessions with Noit',
-  'Deep mood insights & weekly reports',
-  'Personalized Noit color & name',
+  'Unlimited daily sessions with Stoppy',
+  'Deep urge insights & weekly reports',
+  'Personalized Stoppy look & name',
 ];
 
 interface PaywallSheetProps {
@@ -38,7 +38,7 @@ function PaywallSheet({ onStart, onBack, saving = false }: PaywallSheetProps) {
           </Pressable>
         )}
         <View style={styles.heroLabel}>
-          <Text style={styles.heroLabelText}>✦ Noit Premium</Text>
+          <Text style={styles.heroLabelText}>✦ Stoppy Premium</Text>
         </View>
         <View style={{ marginTop: 6 }}>
           <Noit state="happy" size={150} crown />
@@ -47,7 +47,7 @@ function PaywallSheet({ onStart, onBack, saving = false }: PaywallSheetProps) {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>
-          Unlock <Text style={styles.cardTitleEm}>full Noit</Text>
+          Unlock <Text style={styles.cardTitleEm}>full Stoppy</Text>
         </Text>
         <Text style={styles.cardSub}>Start free for 7 days. Cancel anytime.</Text>
 
@@ -89,7 +89,7 @@ function PaywallSheet({ onStart, onBack, saving = false }: PaywallSheetProps) {
             <View key={p} style={styles.perkRow}>
               <View style={styles.perkDot}>
                 <Svg width={12} height={12} viewBox="0 0 12 12" fill="none">
-                  <Path d="M2 6l3 3 5-5" stroke="#7B5BA9" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                  <Path d="M2 6l3 3 5-5" stroke="#38C97A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                 </Svg>
               </View>
               <Text style={styles.perkText}>{p}</Text>
@@ -114,7 +114,7 @@ interface PaywallModalProps {
 export function PaywallModal({ visible, onClose }: PaywallModalProps) {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' }}>
+      <View style={{ flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' }}>
         <PurpleBg />
         <PaywallSheet onStart={onClose} onBack={onClose} />
       </View>
@@ -173,21 +173,21 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#2B1A52',
+    color: '#0F2218',
     textAlign: 'center',
     lineHeight: 30,
   },
-  cardTitleEm: { color: '#7B5BA9' },
+  cardTitleEm: { color: '#38C97A' },
   cardSub: {
     fontSize: 13.5,
-    color: 'rgba(43,26,82,0.52)',
+    color: 'rgba(15,34,24,0.52)',
     textAlign: 'center',
     marginTop: 6,
   },
   plans: { marginTop: 18, gap: 10 },
   plan: {
     borderWidth: 1.5,
-    borderColor: 'rgba(155,125,200,0.2)',
+    borderColor: 'rgba(56,201,122,0.2)',
     borderRadius: 18,
     paddingVertical: 14,
     paddingHorizontal: 18,
@@ -198,18 +198,18 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   planSelected: {
-    borderColor: '#7B5BA9',
-    backgroundColor: 'rgba(123,91,169,0.08)',
+    borderColor: '#38C97A',
+    backgroundColor: 'rgba(56,201,122,0.08)',
   },
-  planName: { fontSize: 15, fontWeight: '600', color: '#2B1A52' },
-  planDesc: { fontSize: 12, color: 'rgba(43,26,82,0.5)', marginTop: 2 },
-  planPrice: { fontSize: 17, fontWeight: '700', color: '#5C3E9C' },
-  planPer: { fontSize: 12, fontWeight: '400', color: 'rgba(43,26,82,0.5)' },
+  planName: { fontSize: 15, fontWeight: '600', color: '#0F2218' },
+  planDesc: { fontSize: 12, color: 'rgba(15,34,24,0.5)', marginTop: 2 },
+  planPrice: { fontSize: 17, fontWeight: '700', color: '#1A8044' },
+  planPer: { fontSize: 12, fontWeight: '400', color: 'rgba(15,34,24,0.5)' },
   badge: {
     position: 'absolute',
     top: -10,
     right: 16,
-    backgroundColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
     paddingVertical: 3,
     paddingHorizontal: 10,
     borderRadius: 10,
@@ -227,20 +227,20 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: 'rgba(92,62,156,0.1)',
+    backgroundColor: 'rgba(31,107,77,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(92,62,156,0.2)',
+    borderColor: 'rgba(31,107,77,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  perkText: { fontSize: 13.5, color: 'rgba(43,26,82,0.78)' },
+  perkText: { fontSize: 13.5, color: 'rgba(15,34,24,0.78)' },
   btnCta: {
     marginTop: 16,
     paddingVertical: 18,
-    backgroundColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
     borderRadius: 22,
     alignItems: 'center',
-    shadowColor: '#7B5BA9',
+    shadowColor: '#38C97A',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.4,
     shadowRadius: 30,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   btnCtaText: { color: 'white', fontSize: 17, fontWeight: '700' },
   legal: {
     fontSize: 11,
-    color: 'rgba(43,26,82,0.4)',
+    color: 'rgba(15,34,24,0.4)',
     textAlign: 'center',
     lineHeight: 17,
     marginTop: 10,

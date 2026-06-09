@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -62,14 +63,17 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!cacheReady) return;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'INITIAL_SESSION' && didInit.current) return;
-      if (event === 'INITIAL_SESSION') didInit.current = true;
 
+    // Shared session handler — used by both the auth event listener AND a
+    // proactive getSession() check on mount. On web, the OAuth redirect reloads
+    // the page and Supabase exchanges the ?code= for a session; the resulting
+    // event can fire before this subscription attaches (during async cache init),
+    // so we don't rely on the event alone — we also pull the session directly.
+    let routed = false;
+    const handleSession = async (session: import('@supabase/supabase-js').Session | null) => {
       setSession(session);
 
       if (!session) {
-        // Clean up realtime subscription on sign-out
         if (realtimeUnsub) { realtimeUnsub(); realtimeUnsub = null; }
         setUser(null);
         setLoading(false);
@@ -126,7 +130,47 @@ export default function RootLayout() {
       setUser(created ?? null);
       setLoading(false);
       router.replace('/onboarding');
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'INITIAL_SESSION' && didInit.current) return;
+      if (event === 'INITIAL_SESSION') didInit.current = true;
+      if (__DEV__) console.log('[auth] event:', event, 'session:', !!session);
+      routed = true;
+      await handleSession(session);
     });
+
+    // Proactive check: on web the redirect reload can deliver the session before
+    // the listener attaches, so the SIGNED_IN/INITIAL_SESSION event is missed and
+    // we'd be stuck on the login screen with a valid session. Pull it directly,
+    // and if the OAuth ?code= is still sitting unexchanged in the URL, exchange it.
+    void (async () => {
+      try {
+        if (
+          Platform.OS === 'web' &&
+          typeof window !== 'undefined' &&
+          window.location.search.includes('code=')
+        ) {
+          const params = new URLSearchParams(window.location.search);
+          const code = params.get('code');
+          if (code) {
+            if (__DEV__) console.log('[auth] exchanging OAuth code from URL');
+            const { error } = await supabase.auth.exchangeCodeForSession(code);
+            if (error && __DEV__) console.warn('[auth] exchange error:', error.message);
+            // Strip the code from the URL so a refresh doesn't re-trigger.
+            window.history.replaceState({}, '', window.location.origin);
+          }
+        }
+      } catch (e) {
+        if (__DEV__) console.warn('[auth] code exchange threw:', e);
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (routed) return; // listener already handled it
+      if (__DEV__) console.log('[auth] getSession fallback, session:', !!session);
+      routed = true;
+      void handleSession(session);
+    })();
 
     return () => subscription.unsubscribe();
   }, [cacheReady]);

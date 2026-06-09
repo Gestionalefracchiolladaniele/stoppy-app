@@ -1,0 +1,507 @@
+import React, { useEffect, useId } from 'react';
+import { View, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedProps,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+import Svg, {
+  Circle,
+  Defs,
+  Ellipse,
+  Path,
+  G,
+  Line,
+  Rect,
+  LinearGradient,
+  RadialGradient,
+  Stop,
+} from 'react-native-svg';
+
+const AG = Animated.createAnimatedComponent(G);
+const AEllipse = Animated.createAnimatedComponent(Ellipse);
+
+export type StoppyVariant =
+  | 'idle'
+  | 'listening'
+  | 'thinking'
+  | 'eating' // semantically "resisting" — eyes closed, focused grip on bamboo
+  | 'happy'
+  | 'excited'
+  | 'wink'
+  | 'curious'
+  | 'eyes_closed';
+
+export interface StoppyProps {
+  state?: StoppyVariant;
+  size?: number;
+  /** When true: freeze all animations, hide aura. Safe for lists / small renders. */
+  static?: boolean;
+  /** Show the mint aura glow behind Stoppy. */
+  glow?: boolean;
+  /** @deprecated Noit-era props — accepted for shim compat, currently no-op on Stoppy. */
+  crown?: boolean;
+  /** @deprecated Noit-era prop — accepted for shim compat, currently no-op on Stoppy. */
+  showSparkles?: boolean;
+}
+
+// viewBox tuned for the seated meditation pose — crops the empty space above/below
+// the compact sitting figure (ears top ~y58, ground shadow ~y411). x stays full width
+// so the bamboo leaves (to ~x214) are not clipped.
+const VB_X = 2;
+const VB_Y = 44;
+const VB_W = 224;
+const VB_H = 380;
+
+/**
+ * Stoppy — the panda mascot (replaces the axolotl Noit).
+ * Structural port of pandafap/mascotte-nofap.html into react-native-svg.
+ * Holds a vertical bamboo (replaces Noit's fork). Iris is forest-green #1C3E24.
+ * 9 variants kept for compatibility with `stoppyVariantForMood` etc.
+ */
+export function Stoppy({
+  state = 'idle',
+  size = 200,
+  static: isStatic = false,
+  glow = true,
+}: StoppyProps) {
+  // crown / showSparkles accepted via props for Noit shim compat (no-op).
+  // Unique gradient ids per instance — on react-native-svg web, multiple SVGs
+  // sharing the same gradient id collide in the DOM and the fills break
+  // (body/head render transparent → only the black parts show). useId fixes it.
+  const uid = useId().replace(/:/g, '');
+  const ID_BODY = `rBodyG-${uid}`;
+  const ID_TUM = `rTumG-${uid}`;
+  const ID_BAMA = `rBamA-${uid}`;
+  const ID_BAMB = `rBamB-${uid}`;
+  const ID_NODE = `rNodeG-${uid}`;
+  const ID_AURA = `sAura-${uid}`;
+
+  const floatY = useSharedValue(0);
+  const blink = useSharedValue(1);
+  const bamboo = useSharedValue(3.5);
+
+  // ── Per-variant expression flags ───────────────────────────────────────────
+  // Every state has DISTINCT eyes + brows + mouth so they read differently
+  // even when rendered small and static (no animations).
+  //
+  //  happy      → ^^ arc eyes UP, big open smile, relaxed brows high
+  //  wink       → one open eye + one wink arc, smirk, raised brow on open side
+  //  curious    → round open eyes, pupils up-left, one brow raised
+  //  eyes_closed→ gentle ⌣ arcs DOWN, calm flat mouth, neutral brows
+  //  eating     → tight >< arcs (squeezed shut), gritted teeth, strong furrow
+  //  excited    → star eyes, open mouth, brows up
+  //  thinking   → open eyes pupils up, brows furrowed inward
+  //  listening  → open eyes pupils left, brows neutral
+  //  idle       → open eyes forward, gentle smile
+  const showSweat = state === 'eating';
+  const showCalmSpark = state === 'happy' || state === 'excited';
+  const cheekFlush =
+    state === 'eating' ? 0.50 :
+    state === 'eyes_closed' ? 0.32 :
+    state === 'happy' || state === 'excited' || state === 'wink' ? 0.35 :
+    0.18;
+
+  useEffect(() => {
+    if (isStatic) return;
+    floatY.value = withRepeat(
+      withSequence(
+        withTiming(-13, { duration: 2100, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 2100, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      false,
+    );
+    blink.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 4620 }),
+        withTiming(0.02, { duration: 130 }),
+        withTiming(1, { duration: 220 }),
+        withTiming(1, { duration: 530 }),
+      ),
+      -1,
+      false,
+    );
+    bamboo.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1900, easing: Easing.inOut(Easing.ease) }),
+        withTiming(3.5, { duration: 1900, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      false,
+    );
+  }, []);
+
+  const rootProps = useAnimatedProps(() => ({
+    transform: `translate(0 ${floatY.value})`,
+  }));
+
+  // Bamboo sways around its base (183, 360) — pivots at the ground beside Stoppy.
+  const bambooProps = useAnimatedProps(() => ({
+    transform: `rotate(${bamboo.value} 183 360)`,
+  }));
+
+  // Blink lids collapse vertically around eye center y=157.
+  const blinkLProps = useAnimatedProps(() => ({
+    transform: `translate(75 157) scale(1 ${blink.value}) translate(-75 -157)`,
+    opacity: 1 - blink.value,
+  }));
+  const blinkRProps = useAnimatedProps(() => ({
+    transform: `translate(125 157) scale(1 ${blink.value}) translate(-125 -157)`,
+    opacity: 1 - blink.value,
+  }));
+
+  const auraSize = size * 1.5;
+  const renderH = size * (VB_H / VB_W);
+  const effectiveGlow = isStatic ? false : glow;
+
+  return (
+    <View style={[styles.container, { width: size, height: renderH }]}>
+      {effectiveGlow && (
+        <Svg
+          width={auraSize}
+          height={auraSize}
+          style={{
+            position: 'absolute',
+            top: renderH * 0.41 - auraSize / 2,
+            left: (size - auraSize) / 2,
+          }}
+          pointerEvents="none"
+        >
+          <Defs>
+            <RadialGradient id={ID_AURA} cx="50%" cy="50%" r="50%">
+              <Stop offset="0" stopColor="#38C97A" stopOpacity={0.18} />
+              <Stop offset="0.44" stopColor="#1F6B4D" stopOpacity={0.06} />
+              <Stop offset="1" stopColor="#1F6B4D" stopOpacity={0} />
+            </RadialGradient>
+          </Defs>
+          <Circle cx={auraSize / 2} cy={auraSize / 2} r={auraSize / 2} fill={`url(#${ID_AURA})`} />
+        </Svg>
+      )}
+
+      <Svg width={size} height={renderH} viewBox={`${VB_X} ${VB_Y} ${VB_W} ${VB_H}`}>
+        <Defs>
+          <RadialGradient id={ID_BODY} cx="34%" cy="28%" r="68%">
+            <Stop offset="0" stopColor="#FFFFFF" />
+            <Stop offset="0.6" stopColor="#F7F2EA" />
+            <Stop offset="1" stopColor="#ECE4D6" />
+          </RadialGradient>
+          <RadialGradient id={ID_TUM} cx="48%" cy="36%" r="60%">
+            <Stop offset="0" stopColor="#FFFFFF" />
+            <Stop offset="1" stopColor="#EDE6DA" />
+          </RadialGradient>
+          <LinearGradient id={ID_BAMA} x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor="#8ED84A" />
+            <Stop offset="0.38" stopColor="#60AC2E" />
+            <Stop offset="1" stopColor="#3C7215" />
+          </LinearGradient>
+          <LinearGradient id={ID_BAMB} x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor="#72BC36" />
+            <Stop offset="0.38" stopColor="#4C9020" />
+            <Stop offset="1" stopColor="#2C6010" />
+          </LinearGradient>
+          <LinearGradient id={ID_NODE} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#3E8C1A" />
+            <Stop offset="1" stopColor="#246010" />
+          </LinearGradient>
+        </Defs>
+
+        <AG animatedProps={rootProps}>
+          {/* Ground glow — sitting mat shadow, wider & lower */}
+          <Ellipse cx="100" cy="398" rx="92" ry="13" fill="rgba(56,201,122,0.16)" />
+          <Ellipse cx="100" cy="392" rx="74" ry="9" fill="rgba(56,201,122,0.10)" />
+
+          {/* ════ BAMBOO (behind body, resting beside Stoppy) ════ */}
+          <AG animatedProps={bambooProps}>
+            <Rect x="178" y="150" width="11" height="46" rx="3.2" fill={`url(#${ID_BAMA})`} />
+            <Rect x="175" y="196" width="17" height="6.5" rx="3" fill={`url(#${ID_NODE})`} />
+            <Rect x="175" y="196" width="17" height="2" rx="1" fill="rgba(255,255,255,0.22)" />
+            <Line x1="178" y1="200" x2="161" y2="184" stroke="#2C6810" strokeWidth="2.4" strokeLinecap="round" />
+            <Ellipse cx="152" cy="178" rx="16" ry="5.2" fill="#60AC2E" transform="rotate(-41 152 178)" />
+
+            <Rect x="178" y="202" width="11" height="46" rx="3.2" fill={`url(#${ID_BAMB})`} />
+            <Rect x="175" y="248" width="17" height="6.5" rx="3" fill={`url(#${ID_NODE})`} />
+            <Rect x="175" y="248" width="17" height="2" rx="1" fill="rgba(255,255,255,0.22)" />
+            <Line x1="189" y1="252" x2="206" y2="237" stroke="#2C6810" strokeWidth="2.4" strokeLinecap="round" />
+            <Ellipse cx="214" cy="231" rx="16" ry="5.2" fill="#4C9020" transform="rotate(37 214 231)" />
+
+            <Rect x="178" y="254" width="11" height="46" rx="3.2" fill={`url(#${ID_BAMA})`} />
+            <Rect x="175" y="300" width="17" height="6.5" rx="3" fill={`url(#${ID_NODE})`} />
+            <Rect x="175" y="300" width="17" height="2" rx="1" fill="rgba(255,255,255,0.22)" />
+            <Rect x="178" y="306" width="11" height="58" rx="3.2" fill={`url(#${ID_BAMB})`} />
+            <Rect x="181" y="150" width="3.2" height="214" rx="1.6" fill="rgba(255,255,255,0.26)" />
+          </AG>
+
+          {/* ════ CROSSED LEGS (lotus) — drawn first, behind the body ════ */}
+          {/* Knees splay out to the sides, soles tucked toward the centre */}
+          {/* Left knee */}
+          <Ellipse cx="52" cy="356" rx="34" ry="27" fill="#0F0F0F" transform="rotate(-8 52 356)" />
+          {/* Right knee */}
+          <Ellipse cx="148" cy="356" rx="34" ry="27" fill="#0F0F0F" transform="rotate(8 148 356)" />
+          {/* Crossed shins meeting at the centre */}
+          <Ellipse cx="100" cy="372" rx="52" ry="22" fill="#1A1A1A" />
+          {/* Left foot sole tucked under the right shin */}
+          <Ellipse cx="118" cy="368" rx="18" ry="12" fill="#262626" transform="rotate(6 118 368)" />
+          {/* Right foot sole tucked under the left shin */}
+          <Ellipse cx="82" cy="368" rx="18" ry="12" fill="#2A2A2A" transform="rotate(-6 82 368)" />
+          {/* Paw pads on the upturned soles */}
+          <Circle cx="118" cy="364" r="3.2" fill="rgba(255,170,150,0.16)" />
+          <Circle cx="82" cy="364" r="3.2" fill="rgba(255,170,150,0.16)" />
+
+          {/* ════ BODY (seated — broad, rises right up under the chin) ════ */}
+          <Ellipse cx="100" cy="288" rx="72" ry="78" fill={`url(#${ID_BODY})`} />
+
+          {/* ════ ARMS — two distinct black limbs, blended into the shoulder ════ */}
+          {/* Left arm: rounded shoulder at the flank, tapering down to the paw.
+              A slim limb shape so it clearly reads as an arm, not a slab. */}
+          <Path
+            d="M 40 250
+               C 24 262 20 296 34 326
+               C 42 344 60 350 72 342
+               C 78 336 76 326 70 318
+               C 58 300 54 276 60 258
+               C 58 248 48 244 40 250 Z"
+            fill="#0F0F0F"
+          />
+          {/* Right arm (mirror) */}
+          <Path
+            d="M 160 250
+               C 176 262 180 296 166 326
+               C 158 344 140 350 128 342
+               C 122 336 124 326 130 318
+               C 142 300 146 276 140 258
+               C 142 248 152 244 160 250 Z"
+            fill="#0F0F0F"
+          />
+
+          {/* ════ BELLY (white tummy, framed by the arms) ════ */}
+          <Ellipse cx="100" cy="300" rx="42" ry="52" fill={`url(#${ID_TUM})`} />
+
+          {/* ════ PAWS resting on the knees (smooth, no marks) ════ */}
+          <Ellipse cx="66" cy="342" rx="17" ry="12" fill="#0F0F0F" transform="rotate(-6 66 342)" />
+          <Ellipse cx="134" cy="342" rx="17" ry="12" fill="#0F0F0F" transform="rotate(6 134 342)" />
+
+          {/* ════ EARS ════ */}
+          <Circle cx="44" cy="92" r="27" fill="#0F0F0F" />
+          <Circle cx="156" cy="92" r="27" fill="#0F0F0F" />
+          <Circle cx="44" cy="92" r="17" fill="#1A1A1A" />
+          <Circle cx="156" cy="92" r="17" fill="#1A1A1A" />
+          <Ellipse cx="40" cy="86" rx="6" ry="8" fill="rgba(255,255,255,0.05)" />
+          <Ellipse cx="152" cy="86" rx="6" ry="8" fill="rgba(255,255,255,0.05)" />
+
+          {/* ════ HEAD ════ */}
+          <Circle cx="100" cy="152" r="76" fill={`url(#${ID_BODY})`} />
+
+          {/* ════ EYEBROWS ════ */}
+          {state === 'happy' || state === 'excited' ? (
+            // Relaxed, raised high — happy / low urge
+            <>
+              <Path d="M 58 118 Q 75 112 92 117" stroke="#0F0F0F" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+              <Path d="M 108 117 Q 125 112 142 118" stroke="#0F0F0F" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'wink' ? (
+            // Left brow raised playfully, right flat
+            <>
+              <Path d="M 58 120 Q 75 112 92 118" stroke="#0F0F0F" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+              <Path d="M 108 124 Q 125 122 142 124" stroke="#0F0F0F" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'curious' ? (
+            // Left brow raised, right normal — quizzical
+            <>
+              <Path d="M 58 120 Q 75 113 92 120" stroke="#0F0F0F" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+              <Path d="M 108 126 Q 125 124 142 126" stroke="#0F0F0F" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'eating' ? (
+            // Strong V-furrow — max tension, straining hard
+            <>
+              <Path d="M 58 128 Q 75 136 92 130" stroke="#0F0F0F" strokeWidth="5.5" fill="none" strokeLinecap="round" />
+              <Path d="M 108 130 Q 125 136 142 128" stroke="#0F0F0F" strokeWidth="5.5" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'eyes_closed' ? (
+            // Slightly drawn in — calm effort
+            <>
+              <Path d="M 60 126 Q 75 122 91 127" stroke="#0F0F0F" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+              <Path d="M 109 127 Q 125 122 140 126" stroke="#0F0F0F" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'thinking' ? (
+            // Inner ends down — mild furrow
+            <>
+              <Path d="M 60 126 Q 75 124 91 129" stroke="#0F0F0F" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+              <Path d="M 109 129 Q 125 124 140 126" stroke="#0F0F0F" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+            </>
+          ) : (
+            // idle / listening — calm flat
+            <>
+              <Path d="M 60 126 Q 75 123 91 126" stroke="#0F0F0F" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+              <Path d="M 109 126 Q 125 123 140 126" stroke="#0F0F0F" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+            </>
+          )}
+
+          {/* ════ EYE PATCHES ════ */}
+          <Ellipse cx="75" cy="158" rx="29" ry="22" fill="#0F0F0F" transform="rotate(-12 75 158)" />
+          <Ellipse cx="125" cy="158" rx="29" ry="22" fill="#0F0F0F" transform="rotate(12 125 158)" />
+
+          {/* ════ EYES — each state has a clearly different eye shape ════ */}
+          {state === 'happy' ? (
+            // ^^ arc eyes — beaming
+            <>
+              <Path d="M 60 162 Q 75 144 90 162" stroke="#FFFFFF" strokeWidth="5" fill="none" strokeLinecap="round" />
+              <Path d="M 110 162 Q 125 144 140 162" stroke="#FFFFFF" strokeWidth="5" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'excited' ? (
+            // Star eyes — energised
+            <>
+              <Path d="M75 144 L79 155 L90 156 L81 163 L84 174 L75 167 L66 174 L69 163 L60 156 L71 155 Z" fill="#F5E060" stroke="#E8C830" strokeWidth="1" />
+              <Path d="M125 144 L129 155 L140 156 L131 163 L134 174 L125 167 L116 174 L119 163 L110 156 L121 155 Z" fill="#F5E060" stroke="#E8C830" strokeWidth="1" />
+            </>
+          ) : state === 'wink' ? (
+            // Left open, right wink arc
+            <>
+              <Circle cx="75" cy="157" r="17" fill="#FFFFFF" />
+              <Circle cx="75" cy="158" r="11" fill="#0F0F0F" />
+              <Circle cx="75" cy="158" r="6.5" fill="#1C3E24" />
+              <Circle cx="70" cy="151" r="3.5" fill="rgba(255,255,255,0.96)" />
+              <Path d="M 110 161 Q 125 149 140 161" stroke="#FFFFFF" strokeWidth="5" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'curious' ? (
+            // Open eyes, pupils shifted up-left — alert/curious
+            <>
+              <Circle cx="75" cy="157" r="17" fill="#FFFFFF" />
+              <Circle cx="125" cy="157" r="17" fill="#FFFFFF" />
+              <Circle cx="72" cy="152" r="12" fill="#0F0F0F" />
+              <Circle cx="122" cy="152" r="12" fill="#0F0F0F" />
+              <Circle cx="72" cy="152" r="7" fill="#1C3E24" />
+              <Circle cx="122" cy="152" r="7" fill="#1C3E24" />
+              <Circle cx="68" cy="147" r="3.5" fill="rgba(255,255,255,0.95)" />
+              <Circle cx="118" cy="147" r="3.5" fill="rgba(255,255,255,0.95)" />
+            </>
+          ) : state === 'eyes_closed' ? (
+            // Gentle ⌣ arcs — calm, meditative
+            <>
+              <Path d="M 62 156 Q 75 168 90 156" stroke="#FFFFFF" strokeWidth="5" fill="none" strokeLinecap="round" />
+              <Path d="M 110 156 Q 125 168 138 156" stroke="#FFFFFF" strokeWidth="5" fill="none" strokeLinecap="round" />
+            </>
+          ) : state === 'eating' ? (
+            // >< tight squeeze lines — straining / intense urge
+            <>
+              <Path d="M 62 152 Q 75 164 90 152" stroke="#FFFFFF" strokeWidth="6" fill="none" strokeLinecap="round" />
+              <Path d="M 110 152 Q 125 164 138 152" stroke="#FFFFFF" strokeWidth="6" fill="none" strokeLinecap="round" />
+              {/* stress lines above the eyes */}
+              <Line x1="68" y1="144" x2="72" y2="148" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
+              <Line x1="82" y1="142" x2="82" y2="147" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
+              <Line x1="118" y1="142" x2="118" y2="147" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
+              <Line x1="132" y1="144" x2="128" y2="148" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
+            </>
+          ) : state === 'thinking' ? (
+            // Open, pupils shifted up — pondering
+            <>
+              <Circle cx="75" cy="157" r="17" fill="#FFFFFF" />
+              <Circle cx="125" cy="157" r="17" fill="#FFFFFF" />
+              <Circle cx="77" cy="151" r="12" fill="#0F0F0F" />
+              <Circle cx="123" cy="151" r="12" fill="#0F0F0F" />
+              <Circle cx="77" cy="151" r="7" fill="#1C3E24" />
+              <Circle cx="123" cy="151" r="7" fill="#1C3E24" />
+              <Circle cx="74" cy="147" r="3.5" fill="rgba(255,255,255,0.95)" />
+              <Circle cx="120" cy="147" r="3.5" fill="rgba(255,255,255,0.95)" />
+            </>
+          ) : (
+            // idle / listening — round open eyes straight ahead
+            <>
+              <Circle cx="75" cy="157" r="17" fill="#FFFFFF" />
+              <Circle cx="125" cy="157" r="17" fill="#FFFFFF" />
+              <Circle cx="77" cy="158" r="12" fill="#0F0F0F" />
+              <Circle cx="123" cy="158" r="12" fill="#0F0F0F" />
+              <Circle cx="77" cy="158" r="7" fill="#1C3E24" />
+              <Circle cx="123" cy="158" r="7" fill="#1C3E24" />
+              <Circle cx="73" cy="153" r="3.5" fill="rgba(255,255,255,0.95)" />
+              <Circle cx="119" cy="153" r="3.5" fill="rgba(255,255,255,0.95)" />
+              {!isStatic && (
+                <>
+                  <AEllipse animatedProps={blinkLProps} cx="75" cy="157" rx="17" ry="17" fill="#0F0F0F" />
+                  <AEllipse animatedProps={blinkRProps} cx="125" cy="157" rx="17" ry="17" fill="#0F0F0F" />
+                </>
+              )}
+            </>
+          )}
+
+          {/* ════ CHEEK BLUSH ════ */}
+          <Ellipse cx="55" cy="183" rx="17" ry="10" fill={`rgba(255,148,128,${cheekFlush})`} />
+          <Ellipse cx="145" cy="183" rx="17" ry="10" fill={`rgba(255,148,128,${cheekFlush})`} />
+
+          {/* ════ NOSE ════ */}
+          <Ellipse cx="100" cy="191" rx="9" ry="6.5" fill="#0F0F0F" />
+          <Ellipse cx="98" cy="188" rx="3.5" ry="2.4" fill="rgba(255,255,255,0.3)" />
+
+          {/* ════ MOUTH — completely different shape per state ════ */}
+          {state === 'happy' ? (
+            // Wide open beaming smile
+            <>
+              <Path d="M 80 205 Q 100 228 120 205" stroke="#0F0F0F" strokeWidth="4" fill="none" strokeLinecap="round" />
+              <Ellipse cx="100" cy="214" rx="13" ry="8" fill="#0F0F0F" />
+              <Ellipse cx="100" cy="216" rx="9" ry="5.5" fill="#3A1414" />
+            </>
+          ) : state === 'excited' ? (
+            // Open O mouth — excited / surprised
+            <>
+              <Ellipse cx="100" cy="212" rx="10" ry="10" fill="#0F0F0F" />
+              <Ellipse cx="100" cy="212" rx="7" ry="7" fill="#3A1414" />
+            </>
+          ) : state === 'wink' ? (
+            // Confident smirk — one side up
+            <Path d="M 86 208 Q 100 220 116 210" stroke="#0F0F0F" strokeWidth="4" fill="none" strokeLinecap="round" />
+          ) : state === 'curious' ? (
+            // Small open O — surprised/curious
+            <>
+              <Ellipse cx="100" cy="212" rx="7" ry="7" fill="#0F0F0F" />
+              <Ellipse cx="100" cy="212" rx="4.5" ry="4.5" fill="#3A1414" />
+            </>
+          ) : state === 'eyes_closed' ? (
+            // Calm held line — serene
+            <Path d="M 88 210 Q 100 214 112 210" stroke="#0F0F0F" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+          ) : state === 'eating' ? (
+            // Gritted teeth bar — maximum tension
+            <>
+              <Rect x="84" y="208" width="32" height="9" rx="4" fill="#0F0F0F" />
+              <Rect x="87" y="210" width="26" height="5" rx="2" fill="#E8E0D0" />
+              <Line x1="93" y1="210" x2="93" y2="215" stroke="#0F0F0F" strokeWidth="1.5" />
+              <Line x1="100" y1="210" x2="100" y2="215" stroke="#0F0F0F" strokeWidth="1.5" />
+              <Line x1="107" y1="210" x2="107" y2="215" stroke="#0F0F0F" strokeWidth="1.5" />
+            </>
+          ) : state === 'thinking' ? (
+            // Slightly pursed / side mouth
+            <Path d="M 88 210 Q 102 218 114 210" stroke="#0F0F0F" strokeWidth="3.8" fill="none" strokeLinecap="round" />
+          ) : (
+            // idle / listening — gentle smile
+            <>
+              <Path d="M 84 207 Q 100 224 116 207" stroke="#0F0F0F" strokeWidth="3.8" fill="none" strokeLinecap="round" />
+              <Circle cx="84" cy="207" r="2.5" fill="rgba(0,0,0,0.2)" />
+              <Circle cx="116" cy="207" r="2.5" fill="rgba(0,0,0,0.2)" />
+            </>
+          )}
+
+          {/* ════ STATE MARKERS ════ */}
+          {showSweat && (
+            <Path d="M 155 128 Q 150 140 155 146 Q 160 140 155 128 Z" fill="#7FD7FF" stroke="#3FA8DD" strokeWidth="1.2" />
+          )}
+          {showCalmSpark && (
+            <>
+              <Path d="M 168 148 L 170 155 L 177 157 L 170 159 L 168 166 L 166 159 L 159 157 L 166 155 Z" fill="#9DF0C0" />
+              <Circle cx="157" cy="141" r="2" fill="#9DF0C0" />
+            </>
+          )}
+        </AG>
+      </Svg>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+});

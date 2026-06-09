@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -11,30 +10,28 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Vibration,
   View,
 } from 'react-native';
 import Animated, {
   Easing,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withSequence,
+  withSpring,
   withTiming,
   cancelAnimation,
 } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
-import { Noit } from '@/components/Noit';
-import { NoitMini, noitVariantForMood } from '@/components/NoitMini';
-import { PurpleBg } from '@/components/PurpleBg';
+import { Stoppy as Noit } from '@/components/Stoppy';
+import { StoppyMini as NoitMini, stoppyVariantForIntensity as noitVariantForMood } from '@/components/StoppyMini';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { useAuthStore } from '@/lib/auth-store';
-import { POPULAR_PRESETS, resolveFood } from '@/lib/food-registry';
 import { CRISIS_MESSAGE, useActiveSession, useSessionStore } from '@/lib/session-store';
-import type { CravingMode, Mood } from '@/types';
-
-function getFoodImage(food: string) {
-  return resolveFood(food).image;
-}
+import type { CravingMode, Mood, StoppyState } from '@/types';
 
 type Phase = 'food' | 'mood' | 'choice' | 'active' | 'end-mood' | 'reflect' | 'end';
 
@@ -75,7 +72,7 @@ export default function SessionScreen() {
     try {
       await startSession({
         userId,
-        food: food.trim() || 'craving',
+        trigger: food.trim() || 'urge',
         mode: selectedMode,
         mood_before: moodBefore,
       });
@@ -87,11 +84,11 @@ export default function SessionScreen() {
     }
   };
 
-  if (phase === 'food') return <FoodPicker onBack={close} food={food} setFood={setFood} onNext={() => setPhase('mood')} />;
+  if (phase === 'food') return <TriggerPicker onBack={close} food={food} setFood={setFood} onNext={() => setPhase('mood')} />;
   if (phase === 'mood')
     return (
       <MoodPicker
-        title="How do you feel right now?"
+        title="How strong is the urge?"
         onBack={() => setPhase('food')}
         value={moodBefore}
         setValue={setMoodBefore}
@@ -109,7 +106,7 @@ export default function SessionScreen() {
   if (phase === 'end-mood')
     return (
       <MoodPicker
-        title="How do you feel now?"
+        title="How strong is the urge now?"
         onBack={() => setPhase('active')}
         value={moodAfter}
         setValue={setMoodAfter}
@@ -158,7 +155,7 @@ function ExitConfirmModal({
       <Pressable style={exitStyles.backdrop} onPress={onKeep}>
         <Pressable style={exitStyles.card} onPress={(e) => e.stopPropagation()}>
           <View style={exitStyles.iconWrap}>
-            <Noit state="curious" size={90} glow={false} />
+            <Noit state="curious" size={64} glow={false} />
           </View>
           <Text style={exitStyles.title}>Leave session?</Text>
           <Text style={exitStyles.body}>
@@ -179,7 +176,7 @@ function ExitConfirmModal({
 const exitStyles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(20,10,50,0.55)',
+    backgroundColor: 'rgba(7,13,9,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
@@ -189,7 +186,7 @@ const exitStyles = StyleSheet.create({
     maxWidth: 360,
     backgroundColor: 'rgba(255,255,255,0.98)',
     borderRadius: 26,
-    paddingTop: 8,
+    paddingTop: 22,
     paddingBottom: 22,
     paddingHorizontal: 22,
     alignItems: 'center',
@@ -199,17 +196,17 @@ const exitStyles = StyleSheet.create({
     shadowRadius: 36,
     elevation: 12,
   },
-  iconWrap: { marginTop: -10 },
+  iconWrap: { marginTop: 0 },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#2B1A52',
+    color: '#0F2218',
     marginTop: 4,
     textAlign: 'center',
   },
   body: {
     fontSize: 14,
-    color: 'rgba(43,26,82,0.62)',
+    color: 'rgba(15,34,24,0.62)',
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
@@ -218,11 +215,11 @@ const exitStyles = StyleSheet.create({
   btnKeep: {
     marginTop: 20,
     width: '100%',
-    backgroundColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
-    shadowColor: '#7B5BA9',
+    shadowColor: '#38C97A',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 18,
@@ -238,8 +235,17 @@ const exitStyles = StyleSheet.create({
   btnExitText: { color: 'rgba(139,64,64,0.85)', fontSize: 14, fontWeight: '600' },
 });
 
-/* ═════ FOOD PICKER ═════ */
-function FoodPicker({
+/* ═════ TRIGGER PICKER ═════ */
+const TRIGGER_PRESETS: { key: string; label: string; icon: string }[] = [
+  { key: 'phone', label: 'Phone / scrolling', icon: '📱' },
+  { key: 'night', label: 'Late at night', icon: '🌙' },
+  { key: 'stress', label: 'Stressed', icon: '😮‍💨' },
+  { key: 'boredom', label: 'Bored', icon: '🥱' },
+  { key: 'loneliness', label: 'Lonely', icon: '🫥' },
+  { key: 'tiredness', label: 'Tired', icon: '😴' },
+];
+
+function TriggerPicker({
   onBack,
   food,
   setFood,
@@ -250,7 +256,24 @@ function FoodPicker({
   setFood: (v: string) => void;
   onNext: () => void;
 }) {
-  const preview = food.trim() ? resolveFood(food) : null;
+  // A preset is selected when `food` matches one of the labels. Otherwise the
+  // user is in "Other" mode: either they tapped Other, or they typed something
+  // that isn't a preset (e.g. coming back to this screen with a custom value).
+  const matchedPreset = TRIGGER_PRESETS.find(
+    (t) => t.label.toLowerCase() === food.trim().toLowerCase(),
+  );
+  const [otherMode, setOtherMode] = useState(!!food.trim() && !matchedPreset);
+  const otherSelected = otherMode || (!!food.trim() && !matchedPreset);
+
+  const selectPreset = (label: string) => {
+    setOtherMode(false);
+    setFood(label);
+  };
+  const selectOther = () => {
+    // Switching to Other clears any preset value so the input starts empty.
+    if (matchedPreset) setFood('');
+    setOtherMode(true);
+  };
 
   return (
     <View style={styles.screen}>
@@ -262,47 +285,52 @@ function FoodPicker({
       </Pressable>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          <View style={{ marginTop: 20 }}>
-            <Noit state="curious" size={120} />
+          <View style={{ marginTop: 8 }}>
+            <Noit state="curious" size={108} />
           </View>
-          <Text style={styles.title}>What are you{'\n'}craving?</Text>
-          <Text style={styles.sub}>Type anything — I'll find it.</Text>
+          <Text style={styles.title}>What set off{'\n'}the urge?</Text>
+          <Text style={styles.sub}>Pick what fits.</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. pizza, sushi, lasagna…"
-            placeholderTextColor="rgba(43,26,82,0.3)"
-            value={food}
-            onChangeText={setFood}
-          />
-
-          {/* live preview of matched food */}
-          {preview && (
-            <View style={styles.previewWrap}>
-              <Image source={preview.image} style={styles.previewImg} resizeMode="contain" />
-              <Text style={styles.previewLabel}>{food.trim()}</Text>
-            </View>
-          )}
-
-          <Text style={styles.presetLabel}>Popular</Text>
-          <View style={styles.foodGrid}>
-            {POPULAR_PRESETS.map((p) => {
-              const sel = food.toLowerCase() === p.query.toLowerCase();
+          <View style={styles.triggerGrid}>
+            {TRIGGER_PRESETS.map((t) => {
+              const sel = !otherSelected && matchedPreset?.key === t.key;
               return (
                 <Pressable
-                  key={p.key}
-                  onPress={() => setFood(p.query)}
-                  style={[styles.foodCell, sel && styles.foodCellSel]}
+                  key={t.key}
+                  onPress={() => selectPreset(t.label)}
+                  style={[styles.triggerCell, sel && styles.triggerCellSel]}
                 >
-                  <Image
-                    source={resolveFood(p.query).image}
-                    style={{ width: 48, height: 48 }}
-                    resizeMode="contain"
-                  />
-                  <Text style={[styles.foodLabel, sel && styles.foodLabelSel]}>{p.label}</Text>
+                  <Text style={styles.triggerIcon}>{t.icon}</Text>
+                  <Text style={[styles.triggerLabel, sel && styles.triggerLabelSel]} numberOfLines={1}>
+                    {t.label}
+                  </Text>
                 </Pressable>
               );
             })}
+
+            {/* Other — selectable like the rest; when selected the card itself
+                becomes the text field (type directly on the card). */}
+            <Pressable
+              onPress={selectOther}
+              style={[styles.triggerCell, styles.triggerCellOther, otherSelected && styles.triggerCellSel]}
+            >
+              <Text style={styles.triggerIcon}>✏️</Text>
+              {otherSelected ? (
+                <TextInput
+                  style={styles.triggerInput}
+                  placeholder="Type what set it off…"
+                  placeholderTextColor="rgba(15,34,24,0.34)"
+                  value={food}
+                  onChangeText={setFood}
+                  autoFocus
+                  returnKeyType="done"
+                />
+              ) : (
+                <Text style={styles.triggerLabel} numberOfLines={1}>
+                  Other
+                </Text>
+              )}
+            </Pressable>
           </View>
 
           <View style={styles.actions}>
@@ -322,11 +350,11 @@ function FoodPicker({
 
 /* ═════ MOOD PICKER ═════ */
 const MOOD_OPTS: { m: Mood; label: string }[] = [
-  { m: 1, label: 'Low' },
-  { m: 2, label: 'Meh' },
-  { m: 3, label: 'OK' },
-  { m: 4, label: 'Good' },
-  { m: 5, label: 'Great' },
+  { m: 1, label: 'Barely' },
+  { m: 2, label: 'Mild' },
+  { m: 3, label: 'Medium' },
+  { m: 4, label: 'Strong' },
+  { m: 5, label: 'Intense' },
 ];
 
 function MoodPicker({
@@ -352,7 +380,8 @@ function MoodPicker({
       </Pressable>
       <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
         <View style={{ marginTop: 30 }}>
-          <Noit state="idle" size={140} />
+          {/* The big Stoppy mirrors the selected urge level (idle until you pick). */}
+          <Noit state={value ? noitVariantForMood(value) : 'idle'} size={140} />
         </View>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.sub}>One tap. No words needed.</Text>
@@ -363,7 +392,7 @@ function MoodPicker({
             return (
               <Pressable key={o.m} onPress={() => setValue(o.m)} style={[styles.moodBtn, sel && styles.moodBtnSel]}>
                 <NoitMini state={noitVariantForMood(o.m)} size={42} />
-                <Text style={[styles.moodLbl, sel && { color: '#4A2A80', fontWeight: '700' }]}>{o.label}</Text>
+                <Text style={[styles.moodLbl, sel && { color: '#1A8044', fontWeight: '700' }]}>{o.label}</Text>
               </Pressable>
             );
           })}
@@ -418,7 +447,7 @@ function ChoiceScreen({
             <Text style={{ fontSize: 28 }}>💬</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.choiceCardTitle}>Talk to Noit</Text>
+            <Text style={styles.choiceCardTitle}>Talk to Stoppy</Text>
             <Text style={styles.choiceCardDesc}>10 min conversation + reflection</Text>
           </View>
         </Pressable>
@@ -451,148 +480,30 @@ function ChoiceScreen({
   );
 }
 
-/* ═════ CHAT (Feed Noit) ═════ */
+/* ═════ CHAT (Talk to Stoppy) ═════ */
 function ChatScreen({ onEnd, onBack }: { onEnd: () => void; onBack: () => void }) {
-  const { session, messages, noitState, isStreaming, isCrisis, sendMessage, setNoitState } =
-    useActiveSession();
+  const {
+    session,
+    messages,
+    stoppyState: noitState,
+    setStoppyState,
+    isStreaming,
+    isCrisis,
+    balanceRounds,
+    sendMessage,
+    incrementBalanceRound,
+  } = useActiveSession();
   const [input, setInput] = useState('');
   const [timer, setTimer] = useState(0);
-  const [showFood, setShowFood] = useState(true);
   const scrollRef = useRef<ScrollView>(null);
 
-  const food = session?.food ?? '';
-  const foodSource = food ? getFoodImage(food) : null;
-
-  // Kirby-style eating animation values
-  const foodTx = useSharedValue(0);
-  const foodTy = useSharedValue(80); // start below Noit
-  const foodScale = useSharedValue(1);
-  const foodOpacity = useSharedValue(0);
-  const foodRotate = useSharedValue(0);
-  // Inhale wind ring around Noit's mouth
-  const inhaleScale = useSharedValue(0);
-  const inhaleOpacity = useSharedValue(0);
-  // Secondary wind ring (delayed) for stronger suck effect
-  const inhale2Scale = useSharedValue(0);
-  const inhale2Opacity = useSharedValue(0);
-
+  // Session timer keeps running regardless of the focus ring mini-game — that
+  // lives inline on the Stoppy stage (no Modal / navigation), so this component
+  // never unmounts and neither the timer nor an in-flight Gemini reply stops.
   useEffect(() => {
     const i = setInterval(() => setTimer((t) => t + 1), 1000);
     return () => clearInterval(i);
   }, []);
-
-  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  const playEatingSequence = () => {
-    if (!foodSource) return;
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-
-    setShowFood(true);
-    setNoitState('curious'); // anticipa: noit guarda incuriosito
-
-    // reset
-    foodTx.value = 0;
-    foodTy.value = 90;
-    foodScale.value = 0.4;
-    foodOpacity.value = 0;
-    foodRotate.value = 0;
-    inhaleScale.value = 0;
-    inhaleOpacity.value = 0;
-    inhale2Scale.value = 0;
-    inhale2Opacity.value = 0;
-
-    // 1) food fade-in + grow + gentle bob (looped softly)
-    foodOpacity.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.cubic) });
-    foodScale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
-    foodTy.value = withSequence(
-      withTiming(78, { duration: 350, easing: Easing.out(Easing.ease) }),
-      withTiming(92, { duration: 550, easing: Easing.inOut(Easing.ease) }),
-      withTiming(78, { duration: 550, easing: Easing.inOut(Easing.ease) }),
-    );
-    foodRotate.value = withSequence(
-      withTiming(-6, { duration: 450, easing: Easing.inOut(Easing.ease) }),
-      withTiming(6, { duration: 450, easing: Easing.inOut(Easing.ease) }),
-      withTiming(0, { duration: 350, easing: Easing.inOut(Easing.ease) }),
-    );
-
-    // 2) Kirby gets excited then opens mouth wide
-    timeoutsRef.current.push(setTimeout(() => setNoitState('excited'), 900));
-    timeoutsRef.current.push(setTimeout(() => setNoitState('eating'), 1400));
-
-    // 3) INHALE wind effect — ring expands outward, then contracts toward mouth
-    //    + food gets sucked in with rotation + shrink + arc trajectory
-    timeoutsRef.current.push(setTimeout(() => {
-      // ring 1: starts wide, sucked toward mouth
-      inhaleScale.value = 1.4;
-      inhaleOpacity.value = 0.55;
-      inhaleScale.value = withTiming(0.1, { duration: 600, easing: Easing.in(Easing.cubic) });
-      inhaleOpacity.value = withTiming(0, { duration: 600, easing: Easing.in(Easing.cubic) });
-
-      // ring 2: delayed for repeat suck sensation
-      inhale2Scale.value = 1.7;
-      inhale2Opacity.value = 0;
-      inhale2Opacity.value = withSequence(
-        withTiming(0.35, { duration: 150 }),
-        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-      );
-      inhale2Scale.value = withTiming(0.1, { duration: 650, easing: Easing.in(Easing.cubic) });
-
-      // food sucked: arc + spin + fast shrink
-      foodTx.value = withTiming(0, { duration: 500 });
-      foodTy.value = withSequence(
-        withTiming(40, { duration: 200, easing: Easing.out(Easing.ease) }),
-        withTiming(-8, { duration: 350, easing: Easing.in(Easing.cubic) }),
-      );
-      foodScale.value = withSequence(
-        withTiming(1.15, { duration: 180, easing: Easing.out(Easing.ease) }), // pre-stretch
-        withTiming(0.08, { duration: 380, easing: Easing.in(Easing.cubic) }),
-      );
-      foodRotate.value = withTiming(540, { duration: 550, easing: Easing.in(Easing.cubic) });
-      foodOpacity.value = withSequence(
-        withTiming(1, { duration: 200 }),
-        withTiming(0, { duration: 350, easing: Easing.in(Easing.cubic) }),
-      );
-    }, 1500));
-
-    // 4) gulp! food gone, Kirby fully puffed (linger)
-    timeoutsRef.current.push(setTimeout(() => {
-      setShowFood(false);
-    }, 2100));
-
-    // 5) satisfied happy face (puff still visible briefly via 'eating' lingering pas → happy)
-    timeoutsRef.current.push(setTimeout(() => setNoitState('happy'), 2900));
-
-    // 6) back to listening
-    timeoutsRef.current.push(setTimeout(() => setNoitState('listening'), 3700));
-  };
-
-  useEffect(() => {
-    playEatingSequence();
-    return () => {
-      timeoutsRef.current.forEach(clearTimeout);
-      timeoutsRef.current = [];
-    };
-  }, [foodSource]);
-
-  const foodAnimStyle = useAnimatedStyle(() => ({
-    opacity: foodOpacity.value,
-    transform: [
-      { translateX: foodTx.value },
-      { translateY: foodTy.value },
-      { scale: foodScale.value },
-      { rotate: `${foodRotate.value}deg` },
-    ],
-  }));
-
-  const inhaleRingStyle = useAnimatedStyle(() => ({
-    opacity: inhaleOpacity.value,
-    transform: [{ scale: inhaleScale.value }],
-  }));
-  const inhaleRing2Style = useAnimatedStyle(() => ({
-    opacity: inhale2Opacity.value,
-    transform: [{ scale: inhale2Scale.value }],
-  }));
 
   const send = () => {
     const t = input.trim();
@@ -604,16 +515,24 @@ function ChatScreen({ onEnd, onBack }: { onEnd: () => void; onBack: () => void }
   const mins = Math.floor(timer / 60);
   const secs = timer % 60;
 
+  // Status pill follows the focus-ring fill: more progress → more dots lit and
+  // an encouraging label near the top. 0% = neutral listening.
+  const [ringPct, setRingPct] = useState(0);
+
   const statusLabel =
     noitState === 'thinking'
-      ? 'Thinking…'
-      : noitState === 'eating'
-      ? 'Mmm…'
-      : noitState === 'happy'
-      ? 'Yum!'
+      ? 'Thinking'
       : isStreaming
-      ? 'Replying…'
+      ? 'Replying'
+      : ringPct >= 0.75
+      ? 'Keep going'
+      : ringPct > 0.001
+      ? 'Mmm'
       : 'Listening';
+
+  // 3 dots fill up with the ring: <33% = 1, <66% = 2, ≥66% = 3 (0% = none lit).
+  const litDots = ringPct <= 0.001 ? 0 : ringPct < 0.34 ? 1 : ringPct < 0.67 ? 2 : 3;
+  const dotStyle = (i: number) => ({ opacity: i < litDots ? 1 : 0.3 });
 
   return (
     <View style={styles.screen}>
@@ -631,7 +550,7 @@ function ChatScreen({ onEnd, onBack }: { onEnd: () => void; onBack: () => void }
               <Noit state="idle" size={36} glow={false} showSparkles={false} />
             </View>
             <View>
-              <Text style={styles.nameText}>Noit</Text>
+              <Text style={styles.nameText}>Stoppy</Text>
               <Text style={styles.status}>{statusLabel}</Text>
             </View>
           </View>
@@ -651,28 +570,26 @@ function ChatScreen({ onEnd, onBack }: { onEnd: () => void; onBack: () => void }
 
         {/* Noit stage */}
         <View style={styles.noitStage}>
-          {/* Inhale wind rings — visible during suck */}
-          <Animated.View style={[styles.inhaleRing, inhaleRingStyle]} pointerEvents="none" />
-          <Animated.View style={[styles.inhaleRing, styles.inhaleRingOuter, inhaleRing2Style]} pointerEvents="none" />
-
-          <Noit state={noitState} size={150} />
-          {showFood && foodSource && (
-            <Animated.View style={[styles.eatingFood, foodAnimStyle]} pointerEvents="none">
-              <Image source={foodSource} style={styles.eatingFoodImg} resizeMode="contain" />
-            </Animated.View>
-          )}
+          <Noit state={noitState} size={128} />
           <View style={styles.statusPill}>
-            <View style={styles.statusDot} />
-            <View style={[styles.statusDot, { opacity: 0.6 }]} />
-            <View style={[styles.statusDot, { opacity: 0.3 }]} />
+            <View style={[styles.statusDot, dotStyle(0)]} />
+            <View style={[styles.statusDot, dotStyle(1)]} />
+            <View style={[styles.statusDot, dotStyle(2)]} />
             <Text style={styles.statusPillText}>{statusLabel}</Text>
           </View>
 
-          {/* Replay eating animation — food icon button */}
-          {foodSource && !showFood && (
-            <Pressable style={styles.replayBtn} onPress={playEatingSequence} hitSlop={8}>
-              <Image source={foodSource} style={{ width: 30, height: 30 }} resizeMode="contain" />
-            </Pressable>
+          {/* Focus-ring tap button — tap fast to weave a bamboo ring around the
+              button and hold off the intrusive thoughts. Stoppy's face shifts
+              with how full the ring is (calm → tense near the top). Inline (no
+              modal) so you can drop back to typing any time. */}
+          {!isCrisis && (
+            <FocusRingButton
+              rounds={balanceRounds}
+              onComplete={incrementBalanceRound}
+              onBand={(state) => setStoppyState(state)}
+              onSettle={() => setStoppyState('listening')}
+              onProgress={setRingPct}
+            />
           )}
         </View>
 
@@ -697,9 +614,9 @@ function ChatScreen({ onEnd, onBack }: { onEnd: () => void; onBack: () => void }
             {messages.map((m) => (
               <View
                 key={m.id}
-                style={[styles.bubble, m.role === 'noit' ? styles.bn : styles.bu]}
+                style={[styles.bubble, m.role === 'stoppy' ? styles.bn : styles.bu]}
               >
-                <Text style={m.role === 'noit' ? styles.bnText : styles.buText}>{m.text}</Text>
+                <Text style={m.role === 'stoppy' ? styles.bnText : styles.buText}>{m.text}</Text>
               </View>
             ))}
           </ScrollView>
@@ -720,7 +637,7 @@ function ChatScreen({ onEnd, onBack }: { onEnd: () => void; onBack: () => void }
             />
             <Pressable style={styles.sendBtn} onPress={send} disabled={isStreaming}>
               <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-                <Path d="M2 9l14-7-7 14V9H2z" fill="#4A2A80" />
+                <Path d="M2 9l14-7-7 14V9H2z" fill="#1A8044" />
               </Svg>
             </Pressable>
           </View>
@@ -735,6 +652,193 @@ function ChatScreen({ onEnd, onBack }: { onEnd: () => void; onBack: () => void }
     </View>
   );
 }
+
+/* ═════ FOCUS RING — hold off the intrusive thoughts ═════
+   Inline mini-game on the Stoppy stage (no modal — the chat stays live so the
+   timer and any in-flight Gemini reply keep running). Tap the bamboo button
+   fast: each tap weaves a bamboo ring further closed AROUND THE BUTTON. Stop
+   tapping and the ring unravels (decays) back toward 0 — let it hit 0 and it
+   vanishes, you start over. Fill it completely → the ring "snaps shut", the
+   completed-rings count bumps, the NEXT ring decays FASTER, and Stoppy goes back
+   to calm. As the ring fills, Stoppy's face goes from calm → tense (the pressure
+   builds the closer you are to sealing it). */
+
+const RING_FILL_PER_TAP = 0.14; // progress added per tap (≈8 taps from empty — easier)
+const RING_BASE_DECAY = 0.22; // progress lost per second at round 0 (gentler)
+const RING_DECAY_STEP = 0.08; // extra decay per second for each completed ring
+const RING_MAX_DECAY = 1.1; // cap so it never becomes literally impossible
+const RING_TICK_MS = 33; // ~30fps decay loop (JS side, drives the shared value)
+
+// Which Stoppy mood to show for a given ring fill. INVERTED: calm at the start,
+// tension builds toward the top (the closer you are to sealing the ring, the
+// harder Stoppy is straining). Empty = back to neutral listening.
+function moodForProgress(p: number): StoppyState {
+  if (p <= 0.001) return 'listening'; // idle ring → calm neutral
+  if (p < 0.25) return 'happy'; // just started, relaxed
+  if (p < 0.5) return 'wink';
+  if (p < 0.75) return 'curious';
+  if (p < 1) return 'eating'; // near the top → max strain
+  return 'eating';
+}
+
+const RING_R = 27; // ring radius around the button
+const RING_C = 2 * Math.PI * RING_R; // circumference for the dash math
+
+function FocusRingButton({
+  rounds,
+  onComplete,
+  onBand,
+  onSettle,
+  onProgress,
+}: {
+  rounds: number;
+  onComplete: () => void;
+  onBand: (state: StoppyState) => void; // change Stoppy's face when the band changes
+  onSettle: () => void; // ring emptied / sealed → back to listening
+  onProgress: (pct: number) => void; // report ring fill 0..1 (drives the status pill)
+}) {
+  // Ring progress 0 → 1. A shared value drives the SVG ring on the UI thread
+  // (60fps, no chat re-render); a JS mirror ref feeds the decay loop + mood band.
+  const progress = useSharedValue(0);
+  const progRef = useRef(0);
+  const flash = useSharedValue(0); // snap-shut burst around the button
+  const btnPulse = useSharedValue(0); // springy bump per tap
+
+  // Decay rate climbs with each completed ring.
+  const decayRate = useRef(RING_BASE_DECAY);
+  useEffect(() => {
+    decayRate.current = Math.min(
+      RING_BASE_DECAY + rounds * RING_DECAY_STEP,
+      RING_MAX_DECAY,
+    );
+  }, [rounds]);
+
+  // Track mood band + status-pill bucket so we only re-render the parent on a
+  // real change (not on every ~30fps decay tick).
+  const bandRef = useRef<StoppyState>('listening');
+  const pillRef = useRef(-1);
+  // Buckets line up with the pill thresholds (dots at .34/.67, label at .75).
+  const pillBucket = (p: number) =>
+    p <= 0.001 ? 0 : p < 0.34 ? 1 : p < 0.67 ? 2 : p < 0.75 ? 3 : 4;
+  const setProgress = (p: number) => {
+    progRef.current = p;
+    progress.value = p;
+    const mood = moodForProgress(p);
+    if (mood !== bandRef.current) {
+      bandRef.current = mood;
+      if (p <= 0.001) onSettle();
+      else onBand(mood);
+    }
+    const bucket = pillBucket(p);
+    if (bucket !== pillRef.current) {
+      pillRef.current = bucket;
+      onProgress(p);
+    }
+  };
+
+  // Continuous decay loop — pulls progress toward 0 when you stop tapping.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (progRef.current <= 0) return;
+      const drop = (decayRate.current * RING_TICK_MS) / 1000;
+      setProgress(Math.max(0, progRef.current - drop));
+    }, RING_TICK_MS);
+    return () => {
+      clearInterval(id);
+      cancelAnimation(progress);
+      cancelAnimation(flash);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const tap = () => {
+    Vibration.vibrate(6); // light feedback per tap; no-op on web
+    btnPulse.value = 0;
+    btnPulse.value = withSpring(1, { damping: 9, stiffness: 220 }, (done) => {
+      if (done) btnPulse.value = withTiming(0, { duration: 160 });
+    });
+
+    const next = progRef.current + RING_FILL_PER_TAP;
+    if (next >= 1) {
+      // Ring snaps shut: burst, count it, reset to empty for the next (faster)
+      // ring, and let Stoppy settle back to calm (no star-eyes).
+      flash.value = 0;
+      flash.value = withSequence(
+        withTiming(1, { duration: 130, easing: Easing.out(Easing.quad) }),
+        withTiming(0, { duration: 360, easing: Easing.in(Easing.quad) }),
+      );
+      onComplete();
+      Vibration.vibrate(18); // satisfying snap
+      progRef.current = 0;
+      progress.value = withTiming(0, { duration: 220 });
+      bandRef.current = 'listening';
+      pillRef.current = 0;
+      onSettle();
+      onProgress(0); // reset the status pill back to "Listening"
+    } else {
+      setProgress(next);
+    }
+  };
+
+  const ringProps = useAnimatedProps(() => ({
+    strokeDashoffset: RING_C * (1 - progress.value),
+    opacity: progress.value <= 0.001 ? 0 : 0.4 + progress.value * 0.6,
+  }));
+  const trackProps = useAnimatedProps(() => ({
+    opacity: progress.value <= 0.001 ? 0 : 0.18,
+  }));
+  const flashStyle = useAnimatedStyle(() => ({
+    opacity: flash.value * 0.8,
+    transform: [{ scale: 1 + flash.value * 0.5 }],
+  }));
+  const btnStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 + btnPulse.value * 0.12 }],
+  }));
+
+  return (
+    <Pressable style={styles.ringBtnWrap} onPress={tap} hitSlop={12}>
+      {/* snap-shut halo burst */}
+      <Animated.View style={[styles.ringFlash, flashStyle]} pointerEvents="none" />
+
+      {/* the woven ring around the button */}
+      <Svg width={64} height={64} viewBox="0 0 64 64" style={StyleSheet.absoluteFill} pointerEvents="none">
+        <AnimatedCircle
+          cx={32}
+          cy={32}
+          r={RING_R}
+          stroke="#38C97A"
+          strokeWidth={2}
+          fill="none"
+          animatedProps={trackProps}
+        />
+        <AnimatedCircle
+          cx={32}
+          cy={32}
+          r={RING_R}
+          stroke="#5BB87E"
+          strokeWidth={3.5}
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={RING_C}
+          transform="rotate(-90 32 32)"
+          animatedProps={ringProps}
+        />
+      </Svg>
+
+      <Animated.View style={[styles.ringBtn, btnStyle]}>
+        <Text style={styles.ringBtnIcon}>🎋</Text>
+      </Animated.View>
+
+      {rounds > 0 && (
+        <View style={styles.ringBadge}>
+          <Text style={styles.ringBadgeText}>{rounds}</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /* ═════ BREATHE ═════ */
 type BreathePhase = 'inhale' | 'hold' | 'exhale';
@@ -903,7 +1007,7 @@ function BreatheScreen({ onBack, onComplete }: { onBack: () => void; onComplete:
           <Animated.View style={[styles.breatheAuraOuter, outerAuraStyle]} pointerEvents="none" />
           <Animated.View style={[styles.breatheAuraInner, innerAuraStyle]} pointerEvents="none" />
           <Animated.View style={noitBodyStyle}>
-            <Noit state={noitVariant} size={210} showSparkles={false} />
+            <Noit state={noitVariant} size={150} showSparkles={false} />
           </Animated.View>
           {/* Breath cloud (sospiro): in on inhale, out on exhale */}
           <Animated.View style={[styles.breathCloud, breathCloudStyle]} pointerEvents="none" />
@@ -974,7 +1078,7 @@ function ReflectScreen({
           <TextInput
             style={styles.reflectInput}
             placeholder="Type whatever comes up… one word or a paragraph."
-            placeholderTextColor="rgba(43,26,82,0.3)"
+            placeholderTextColor="rgba(15,34,24,0.3)"
             value={reflection}
             onChangeText={setReflection}
             multiline
@@ -1047,7 +1151,7 @@ function EndScreen({
         </View>
         <Text style={styles.endTitle}>You showed up today.</Text>
         <Text style={styles.endInsight}>
-          {saving ? 'Noit is writing your recap…' : `"${recap}"`}
+          {saving ? 'Stoppy is writing your recap…' : `"${recap}"`}
         </Text>
         <Pressable style={[styles.endBtn, saving && { opacity: 0.5 }]} disabled={saving} onPress={onClose}>
           <Text style={styles.endBtnText}>{saving ? 'Saving…' : 'Save to journal'}</Text>
@@ -1061,7 +1165,7 @@ function EndScreen({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' },
+  screen: { flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' },
 
   backBtnTL: {
     position: 'absolute',
@@ -1090,7 +1194,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
   },
-  btnMainText: { color: '#4A2A80', fontSize: 17, fontWeight: '700' },
+  btnMainText: { color: '#1A8044', fontSize: 17, fontWeight: '700' },
 
   /* Reflect */
   reflectInput: {
@@ -1101,7 +1205,7 @@ const styles = StyleSheet.create({
     padding: 18,
     fontSize: 15,
     lineHeight: 22,
-    color: '#2B1A52',
+    color: '#0F2218',
     marginTop: 22,
   },
 
@@ -1113,7 +1217,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 22,
     fontSize: 16,
-    color: '#2B1A52',
+    color: '#0F2218',
     textAlign: 'center',
     marginTop: 22,
   },
@@ -1157,18 +1261,72 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.7)',
   },
   foodCellSel: {
-    borderColor: '#7B5BA9',
+    borderColor: '#38C97A',
     borderWidth: 2,
     backgroundColor: 'white',
   },
   foodLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: 'rgba(43,26,82,0.62)',
+    color: 'rgba(15,34,24,0.62)',
     textAlign: 'center',
   },
   foodLabelSel: {
-    color: '#2B1A52',
+    color: '#0F2218',
+    fontWeight: '700',
+  },
+
+  /* Trigger picker — compact chips, 2 per row, full-width Other */
+  triggerGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 18,
+    justifyContent: 'space-between',
+  },
+  triggerCell: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    width: '48.5%',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.55)',
+  },
+  triggerCellOther: {
+    width: '100%',
+    gap: 8,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.82)',
+  },
+  triggerInput: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0F2218',
+    padding: 0,
+    margin: 0,
+    includeFontPadding: false,
+  },
+  triggerCellSel: {
+    borderColor: '#38C97A',
+    borderWidth: 2,
+    backgroundColor: 'white',
+  },
+  triggerIcon: {
+    fontSize: 20,
+  },
+  triggerLabel: {
+    flexShrink: 1,
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: 'rgba(15,34,24,0.72)',
+  },
+  triggerLabelSel: {
+    color: '#0F2218',
     fontWeight: '700',
   },
 
@@ -1184,8 +1342,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.7)',
     gap: 6,
   },
-  moodBtnSel: { backgroundColor: 'white', borderColor: '#7B5BA9', borderWidth: 2 },
-  moodLbl: { fontSize: 11, color: 'rgba(43,26,82,0.62)', fontWeight: '600' },
+  moodBtnSel: { backgroundColor: 'white', borderColor: '#38C97A', borderWidth: 2 },
+  moodLbl: { fontSize: 11, color: 'rgba(15,34,24,0.62)', fontWeight: '600' },
 
   /* Choice */
   choiceCard: {
@@ -1201,10 +1359,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
   },
-  choiceCardSel: { backgroundColor: 'white', borderColor: '#7B5BA9', borderWidth: 2 },
-  choiceIcon: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(92,62,156,0.09)', alignItems: 'center', justifyContent: 'center' },
-  choiceCardTitle: { fontSize: 16, fontWeight: '700', color: '#2B1A52' },
-  choiceCardDesc: { fontSize: 13, color: 'rgba(43,26,82,0.55)', marginTop: 3 },
+  choiceCardSel: { backgroundColor: 'white', borderColor: '#38C97A', borderWidth: 2 },
+  choiceIcon: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(31,107,77,0.09)', alignItems: 'center', justifyContent: 'center' },
+  choiceCardTitle: { fontSize: 16, fontWeight: '700', color: '#0F2218' },
+  choiceCardDesc: { fontSize: 13, color: 'rgba(15,34,24,0.55)', marginTop: 3 },
 
   /* Top bar (chat) */
   topBar: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -1247,8 +1405,8 @@ const styles = StyleSheet.create({
   noitStage: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 14,
-    paddingBottom: 22,
+    paddingTop: 18,
+    paddingBottom: 34,
     position: 'relative',
   },
   noitGlow: {
@@ -1286,64 +1444,54 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.9)',
     marginLeft: 4,
   },
-  inhaleRing: {
+  /* Focus-ring tap button (the woven ring draws around the button itself) */
+  ringBtnWrap: {
     position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: 180,
-    height: 180,
-    marginLeft: -90,
-    marginTop: -90,
-    borderRadius: 90,
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.55)',
-    backgroundColor: 'transparent',
-  },
-  inhaleRingOuter: {
-    width: 220,
-    height: 220,
-    marginLeft: -110,
-    marginTop: -110,
-    borderRadius: 110,
-    borderColor: 'rgba(255,255,255,0.35)',
-    borderWidth: 2,
-  },
-  eatingFood: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginLeft: -32,
-    marginTop: -32,
+    bottom: 0,
+    right: 14,
     width: 64,
     height: 64,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
   },
-  eatingFoodImg: { width: 60, height: 60, backgroundColor: 'transparent' },
-
-  replayBtn: {
+  ringFlash: {
     position: 'absolute',
-    bottom: 6,
-    right: 18,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 2.5,
+    borderColor: '#5BB87E',
+  },
+  ringBtn: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(56,201,122,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(56,201,122,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 3,
   },
+  ringBtnIcon: { fontSize: 21 },
+  ringBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: '#1A8044',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringBadgeText: { fontSize: 11, fontWeight: '800', color: '#E8F5EE' },
 
   /* Chat bubbles */
   chatArea: {
     flex: 1,
     paddingHorizontal: 18,
-    paddingTop: 8,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
   },
@@ -1367,7 +1515,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   bnText: { fontSize: 14.5, lineHeight: 22, color: 'white' },
-  buText: { fontSize: 14.5, lineHeight: 22, color: '#2B1A52' },
+  buText: { fontSize: 14.5, lineHeight: 22, color: '#0F2218' },
 
   inputWrap: {
     paddingVertical: 10,
@@ -1440,18 +1588,18 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   breatheNoitWrap: {
-    marginTop: 28,
-    width: 340,
-    height: 340,
+    marginTop: 24,
+    width: 310,
+    height: 310,
     alignItems: 'center',
     justifyContent: 'center',
   },
   breatheAuraOuter: {
     position: 'absolute',
-    width: 320,
-    height: 320,
-    borderRadius: 160,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(255,255,255,0.10)',
   },
   breathCloud: {
     position: 'absolute',
@@ -1532,25 +1680,26 @@ const styles = StyleSheet.create({
   },
   endChip: { backgroundColor: 'rgba(26,107,68,0.1)', borderRadius: 12, paddingVertical: 5, paddingHorizontal: 12, alignSelf: 'flex-start', marginBottom: 12 },
   endChipText: { fontSize: 13, fontWeight: '600', color: '#1A6B44' },
-  endTitle: { fontSize: 20, fontWeight: '700', color: '#2B1A52' },
+  endTitle: { fontSize: 20, fontWeight: '700', color: '#0F2218' },
   endInsight: {
     fontSize: 14,
-    color: 'rgba(43,26,82,0.62)',
+    color: 'rgba(15,34,24,0.62)',
     lineHeight: 22,
     marginTop: 8,
     fontStyle: 'italic',
     borderLeftWidth: 3,
-    borderLeftColor: 'rgba(92,62,156,0.3)',
+    borderLeftColor: 'rgba(31,107,77,0.3)',
     paddingLeft: 12,
   },
   endBtn: {
     marginTop: 20,
     paddingVertical: 18,
-    backgroundColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
     borderRadius: 20,
     alignItems: 'center',
   },
   endBtnText: { color: 'white', fontSize: 16, fontWeight: '700' },
   endGhost: { paddingVertical: 14, alignItems: 'center' },
-  endGhostText: { fontSize: 15, fontWeight: '500', color: 'rgba(43,26,82,0.55)' },
+  endGhostText: { fontSize: 15, fontWeight: '500', color: 'rgba(15,34,24,0.55)' },
 });
+

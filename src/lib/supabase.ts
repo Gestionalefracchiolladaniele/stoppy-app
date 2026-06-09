@@ -12,6 +12,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
+    // On web, Supabase reads the OAuth code/hash from the redirect URL.
     detectSessionInUrl: Platform.OS === 'web',
+    // PKCE works for both the web OAuth redirect and native flows.
+    flowType: 'pkce',
   },
 });

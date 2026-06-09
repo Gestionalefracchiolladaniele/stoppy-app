@@ -5,8 +5,8 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { CalendarPicker, DateRange } from '@/components/CalendarPicker';
-import { NoitMini, noitVariantForMood } from '@/components/NoitMini';
-import { PurpleBg } from '@/components/PurpleBg';
+import { StoppyMini as NoitMini, stoppyVariantForIntensity as noitVariantForMood } from '@/components/StoppyMini';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { TabBar } from '@/components/TabBar';
 import { useAuthStore } from '@/lib/auth-store';
 import { formatDuration } from '@/lib/format';
@@ -45,13 +45,14 @@ function fmt(d: Date) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// Average URGE intensity → label (higher = more intense).
 function moodLabelFromAvg(m: number | null): string {
   if (m === null) return '—';
-  if (m >= 4.5) return 'Great';
-  if (m >= 3.5) return 'Good';
-  if (m >= 2.5) return 'OK';
-  if (m >= 1.5) return 'Low';
-  return 'Hard';
+  if (m >= 4.5) return 'Intense';
+  if (m >= 3.5) return 'Strong';
+  if (m >= 2.5) return 'Medium';
+  if (m >= 1.5) return 'Mild';
+  return 'Barely';
 }
 
 function PulseCard({ style, children }: { style?: any; children: React.ReactNode }) {
@@ -157,14 +158,14 @@ export default function InsightsScreen() {
         {/* Mood before / after chart — adaptive to selected range */}
         <PulseCard style={styles.chartCard}>
           <View style={styles.chartHeader}>
-            <Text style={styles.cardLabel}>Mood before vs after</Text>
+            <Text style={styles.cardLabel}>Urge before vs after</Text>
             <View style={styles.legendRow}>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: 'rgba(123,91,169,0.5)' }]} />
+                <View style={[styles.legendDot, { backgroundColor: 'rgba(56,201,122,0.5)' }]} />
                 <Text style={styles.legendText}>Before</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#5C3E9C' }]} />
+                <View style={[styles.legendDot, { backgroundColor: '#1A8044' }]} />
                 <Text style={styles.legendText}>After</Text>
               </View>
             </View>
@@ -176,13 +177,13 @@ export default function InsightsScreen() {
         <PulseCard style={styles.moodAvgCard}>
           <View style={styles.cardHead}>
             <Text style={styles.cardLabel}>
-              {avgView === 'mood' ? 'Average mood' : 'Best time of day'}
+              {avgView === 'mood' ? 'Average urge' : 'Best time of day'}
             </Text>
             <SwitchTabs
               value={avgView}
               onChange={(v) => setAvgView(v as AvgView)}
               options={[
-                { id: 'mood', label: 'Mood' },
+                { id: 'mood', label: 'Urge' },
                 { id: 'bestTime', label: 'Best time' },
               ]}
             />
@@ -200,7 +201,7 @@ export default function InsightsScreen() {
                   <Svg width={28} height={20} viewBox="0 0 28 20" fill="none">
                     <Path
                       d="M2 10 L24 10 M18 4 L24 10 L18 16"
-                      stroke="#7B5BA9"
+                      stroke="#38C97A"
                       strokeWidth={2.5}
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -248,26 +249,26 @@ export default function InsightsScreen() {
           </PulseCard>
         )}
 
-        {/* When you crave — heatmap weekday × hour bucket */}
+        {/* When urges hit — heatmap weekday × hour bucket */}
         <PulseCard style={styles.timeCard}>
-          <Text style={styles.cardLabel}>When you crave</Text>
+          <Text style={styles.cardLabel}>When urges hit</Text>
           <WeekdayHourHeatmap byWeekdayHour={stats?.byWeekdayHour ?? Array.from({ length: 7 }, () => Array(6).fill(0))} />
         </PulseCard>
 
-        {/* Cravings — Top counts / Mood by craving switch */}
+        {/* Triggers — Top counts / Urge relief by trigger switch */}
         <PulseCard style={styles.themeCard}>
           <View style={styles.cardHead}>
             <Text style={styles.cardLabel}>
               {foodView === 'top'
-                ? `Top ${modeTab === 'breathe' ? 'breath moments' : 'cravings'}`
-                : 'Mood by craving'}
+                ? `Top ${modeTab === 'breathe' ? 'breath moments' : 'triggers'}`
+                : 'Relief by trigger'}
             </Text>
             <SwitchTabs
               value={foodView}
               onChange={(v) => setFoodView(v as FoodView)}
               options={[
                 { id: 'top', label: 'Top' },
-                { id: 'mood', label: 'Mood' },
+                { id: 'mood', label: 'Relief' },
               ]}
             />
           </View>
@@ -356,11 +357,11 @@ function BestTimePanel({
   return (
     <View style={{ marginTop: 6 }}>
       <View style={styles.bestTimeHero}>
-        <Text style={styles.bestTimeLbl}>You feel best after sessions started</Text>
+        <Text style={styles.bestTimeLbl}>Urges ease most when you start around</Text>
         <Text style={styles.bestTimeRange}>{fullLabel}</Text>
         <View style={[styles.deltaPill, styles.deltaUp, { alignSelf: 'center', marginTop: 6 }]}>
           <Text style={[styles.deltaPillText, styles.deltaUpText]}>
-            {sign}{bestBucket.avgDelta.toFixed(1)} mood
+            {sign}{bestBucket.avgDelta.toFixed(1)} relief
           </Text>
         </View>
       </View>
@@ -379,11 +380,11 @@ function BestTimePanel({
                     styles.bestTimeBarFill,
                     { height: `${heightPct}%` },
                     v != null && v < 0 && { backgroundColor: 'rgba(138,24,64,0.45)' },
-                    isBest && { backgroundColor: '#5C3E9C' },
+                    isBest && { backgroundColor: '#1A8044' },
                   ]}
                 />
               </View>
-              <Text style={[styles.bestTimeBarLbl, isBest && { color: '#5C3E9C', fontWeight: '700' }]}>
+              <Text style={[styles.bestTimeBarLbl, isBest && { color: '#1A8044', fontWeight: '700' }]}>
                 {b.label}
               </Text>
             </View>
@@ -464,8 +465,8 @@ function MoodChart({ series }: { series: { label: string; before: number | null;
       <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
         <Defs>
           <LinearGradient id="afg" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#5C3E9C" stopOpacity={0.32} />
-            <Stop offset="1" stopColor="#5C3E9C" stopOpacity={0.02} />
+            <Stop offset="0" stopColor="#1A8044" stopOpacity={0.32} />
+            <Stop offset="1" stopColor="#1A8044" stopOpacity={0.02} />
           </LinearGradient>
         </Defs>
 
@@ -477,7 +478,7 @@ function MoodChart({ series }: { series: { label: string; before: number | null;
             y={yFor(m)}
             width={W}
             height={1}
-            fill="rgba(43,26,82,0.05)"
+            fill="rgba(15,34,24,0.05)"
           />
         ))}
 
@@ -485,7 +486,7 @@ function MoodChart({ series }: { series: { label: string; before: number | null;
         {before.line ? (
           <Path
             d={before.line}
-            stroke="rgba(123,91,169,0.5)"
+            stroke="rgba(56,201,122,0.5)"
             strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -499,7 +500,7 @@ function MoodChart({ series }: { series: { label: string; before: number | null;
         {after.line ? (
           <Path
             d={after.line}
-            stroke="#5C3E9C"
+            stroke="#1A8044"
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -509,10 +510,10 @@ function MoodChart({ series }: { series: { label: string; before: number | null;
 
         {/* Dots */}
         {after.pts.map((p, i) => (
-          <Circle key={`a${i}`} cx={p.x} cy={p.y} r={4} fill="#5C3E9C" />
+          <Circle key={`a${i}`} cx={p.x} cy={p.y} r={4} fill="#1A8044" />
         ))}
         {before.pts.map((p, i) => (
-          <Circle key={`b${i}`} cx={p.x} cy={p.y} r={2.5} fill="rgba(123,91,169,0.7)" />
+          <Circle key={`b${i}`} cx={p.x} cy={p.y} r={2.5} fill="rgba(56,201,122,0.7)" />
         ))}
       </Svg>
 
@@ -535,11 +536,11 @@ function WeekdayHourHeatmap({ byWeekdayHour }: { byWeekdayHour: number[][] }) {
   );
 
   const colorFor = (count: number): string => {
-    if (count === 0) return 'rgba(123,91,169,0.07)';
+    if (count === 0) return 'rgba(56,201,122,0.07)';
     const t = count / max;
-    if (t < 0.34) return 'rgba(123,91,169,0.28)';
-    if (t < 0.67) return 'rgba(123,91,169,0.58)';
-    return '#5C3E9C';
+    if (t < 0.34) return 'rgba(56,201,122,0.28)';
+    if (t < 0.67) return 'rgba(56,201,122,0.58)';
+    return '#1A8044';
   };
 
   return (
@@ -576,7 +577,7 @@ function WeekdayHourHeatmap({ byWeekdayHour }: { byWeekdayHour: number[][] }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' },
+  screen: { flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' },
   scroll: { flex: 1 },
   header: {
     paddingHorizontal: 22, paddingTop: 60, paddingBottom: 12,
@@ -591,7 +592,7 @@ const styles = StyleSheet.create({
   wt: { paddingVertical: 5, paddingHorizontal: 8, borderRadius: 9 },
   wtOn: { backgroundColor: 'rgba(255,255,255,0.9)' },
   wtText: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.55)' },
-  wtTextOn: { color: '#4A2A80' },
+  wtTextOn: { color: '#1A8044' },
   calBtn: {
     width: 34, height: 34, borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.14)',
@@ -614,30 +615,30 @@ const styles = StyleSheet.create({
   },
   modeTabOn: { backgroundColor: 'rgba(255,255,255,0.92)', borderColor: 'white' },
   modeTabText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.75)' },
-  modeTabTextOn: { color: '#4A2A80' },
+  modeTabTextOn: { color: '#1A8044' },
   chartCard: { marginHorizontal: 18, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 22, padding: 18 },
   chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   legendRow: { flexDirection: 'row', gap: 12 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11, color: 'rgba(43,26,82,0.55)', fontWeight: '500' },
+  legendText: { fontSize: 11, color: 'rgba(15,34,24,0.55)', fontWeight: '500' },
   cardLabel: {
-    fontSize: 12, fontWeight: '600', color: 'rgba(43,26,82,0.5)',
+    fontSize: 12, fontWeight: '600', color: 'rgba(15,34,24,0.5)',
     letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12,
   },
   chartLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingHorizontal: 4 },
-  chartLbl: { fontSize: 10, color: 'rgba(43,26,82,0.45)', fontWeight: '600', flex: 1, textAlign: 'center' },
+  chartLbl: { fontSize: 10, color: 'rgba(15,34,24,0.45)', fontWeight: '600', flex: 1, textAlign: 'center' },
   moodAvgCard: {
     marginHorizontal: 18, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.92)',
     borderRadius: 22, paddingVertical: 18, paddingHorizontal: 16,
   },
   moodAvgRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: 'rgba(123,91,169,0.06)', borderRadius: 16, paddingVertical: 14,
+    backgroundColor: 'rgba(56,201,122,0.06)', borderRadius: 16, paddingVertical: 14,
   },
   moodAvgSlot: { flex: 1, alignItems: 'center', gap: 5 },
-  avgTag: { fontSize: 10, fontWeight: '700', color: 'rgba(43,26,82,0.5)', letterSpacing: 1.4, textTransform: 'uppercase' },
-  moodAvgVal: { fontSize: 14, fontWeight: '700', color: '#2B1A52' },
+  avgTag: { fontSize: 10, fontWeight: '700', color: 'rgba(15,34,24,0.5)', letterSpacing: 1.4, textTransform: 'uppercase' },
+  moodAvgVal: { fontSize: 14, fontWeight: '700', color: '#0F2218' },
   moodAvgArrow: { alignItems: 'center', gap: 4, paddingHorizontal: 4 },
   deltaPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, overflow: 'hidden' },
   deltaPillText: { fontSize: 12, fontWeight: '700' },
@@ -645,59 +646,59 @@ const styles = StyleSheet.create({
   deltaUpText: { color: '#1A6B44' },
   deltaDown: { backgroundColor: 'rgba(138,24,64,0.12)' },
   deltaDownText: { color: '#8A1840' },
-  deltaNeutral: { backgroundColor: 'rgba(43,26,82,0.08)' },
-  deltaNeutralText: { color: 'rgba(43,26,82,0.55)' },
+  deltaNeutral: { backgroundColor: 'rgba(15,34,24,0.08)' },
+  deltaNeutralText: { color: 'rgba(15,34,24,0.55)' },
   cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   switchTabs: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(123,91,169,0.08)',
+    backgroundColor: 'rgba(56,201,122,0.08)',
     borderRadius: 10,
     padding: 2,
   },
   switchTab: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 8 },
   switchTabOn: { backgroundColor: 'white' },
-  switchTabText: { fontSize: 11, fontWeight: '600', color: 'rgba(43,26,82,0.55)' },
-  switchTabTextOn: { color: '#5C3E9C' },
+  switchTabText: { fontSize: 11, fontWeight: '600', color: 'rgba(15,34,24,0.55)' },
+  switchTabTextOn: { color: '#1A8044' },
   bestTimeHero: {
-    backgroundColor: 'rgba(123,91,169,0.06)',
+    backgroundColor: 'rgba(56,201,122,0.06)',
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 12,
     alignItems: 'center',
   },
-  bestTimeLbl: { fontSize: 12, color: 'rgba(43,26,82,0.55)', fontWeight: '500' },
-  bestTimeRange: { fontSize: 22, fontWeight: '700', color: '#2B1A52', marginTop: 4 },
+  bestTimeLbl: { fontSize: 12, color: 'rgba(15,34,24,0.55)', fontWeight: '500' },
+  bestTimeRange: { fontSize: 22, fontWeight: '700', color: '#0F2218', marginTop: 4 },
   bestTimeBars: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14, height: 80, gap: 4 },
   bestTimeBarCol: { flex: 1, alignItems: 'center', gap: 4, justifyContent: 'flex-end', height: '100%' },
   bestTimeBarTrack: { width: '100%', height: 56, justifyContent: 'flex-end' },
-  bestTimeBarFill: { width: '100%', backgroundColor: 'rgba(123,91,169,0.45)', borderRadius: 4 },
-  bestTimeBarLbl: { fontSize: 10, color: 'rgba(43,26,82,0.5)', fontWeight: '600' },
+  bestTimeBarFill: { width: '100%', backgroundColor: 'rgba(56,201,122,0.45)', borderRadius: 4 },
+  bestTimeBarLbl: { fontSize: 10, color: 'rgba(15,34,24,0.5)', fontWeight: '600' },
   mbcRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: 'rgba(123,91,169,0.06)',
+    backgroundColor: 'rgba(56,201,122,0.06)',
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  mbcFood: { fontSize: 14, fontWeight: '700', color: '#2B1A52', textTransform: 'capitalize' },
-  mbcSub: { fontSize: 12, color: 'rgba(43,26,82,0.52)', marginTop: 2 },
-  moodAvgFooter: { fontSize: 12, color: 'rgba(43,26,82,0.45)', textAlign: 'center', marginTop: 10 },
+  mbcFood: { fontSize: 14, fontWeight: '700', color: '#0F2218', textTransform: 'capitalize' },
+  mbcSub: { fontSize: 12, color: 'rgba(15,34,24,0.52)', marginTop: 2 },
+  moodAvgFooter: { fontSize: 12, color: 'rgba(15,34,24,0.45)', textAlign: 'center', marginTop: 10 },
   totalCard: {
     marginHorizontal: 18, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.92)',
     borderRadius: 22, paddingVertical: 18, paddingHorizontal: 20,
   },
-  totalVal: { fontSize: 26, fontWeight: '700', color: '#2B1A52' },
-  totalSub: { fontSize: 13, color: 'rgba(43,26,82,0.52)', marginTop: 3 },
+  totalVal: { fontSize: 26, fontWeight: '700', color: '#0F2218' },
+  totalSub: { fontSize: 13, color: 'rgba(15,34,24,0.52)', marginTop: 3 },
   timeCard: {
     marginHorizontal: 18, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.92)',
     borderRadius: 22, paddingVertical: 18, paddingHorizontal: 16,
   },
   heatmapHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 6, gap: 4 },
   heatmapRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 },
-  heatmapDayLbl: { width: 26, fontSize: 10, fontWeight: '700', color: 'rgba(43,26,82,0.55)', textAlign: 'center' },
-  heatmapHourLbl: { flex: 1, fontSize: 9, fontWeight: '600', color: 'rgba(43,26,82,0.42)', textAlign: 'center' },
+  heatmapDayLbl: { width: 26, fontSize: 10, fontWeight: '700', color: 'rgba(15,34,24,0.55)', textAlign: 'center' },
+  heatmapHourLbl: { flex: 1, fontSize: 9, fontWeight: '600', color: 'rgba(15,34,24,0.42)', textAlign: 'center' },
   heatmapCell: {
     flex: 1, height: 22, borderRadius: 6,
     alignItems: 'center', justifyContent: 'center',
@@ -708,9 +709,9 @@ const styles = StyleSheet.create({
     borderRadius: 22, paddingVertical: 18, paddingHorizontal: 20,
   },
   themeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
-  themeName: { fontSize: 13, fontWeight: '600', color: '#2B1A52', width: 90, textTransform: 'capitalize' },
-  barBg: { flex: 1, height: 8, backgroundColor: 'rgba(43,26,82,0.08)', borderRadius: 4, overflow: 'hidden' },
-  bar: { height: '100%', backgroundColor: '#7B5BA9', borderRadius: 4 },
-  themePct: { fontSize: 12, color: 'rgba(43,26,82,0.5)', fontWeight: '500', width: 28, textAlign: 'right' },
-  subText: { fontSize: 13, color: 'rgba(43,26,82,0.4)', textAlign: 'center', paddingVertical: 12 },
+  themeName: { fontSize: 13, fontWeight: '600', color: '#0F2218', width: 90, textTransform: 'capitalize' },
+  barBg: { flex: 1, height: 8, backgroundColor: 'rgba(15,34,24,0.08)', borderRadius: 4, overflow: 'hidden' },
+  bar: { height: '100%', backgroundColor: '#38C97A', borderRadius: 4 },
+  themePct: { fontSize: 12, color: 'rgba(15,34,24,0.5)', fontWeight: '500', width: 28, textAlign: 'right' },
+  subText: { fontSize: 13, color: 'rgba(15,34,24,0.4)', textAlign: 'center', paddingVertical: 12 },
 });

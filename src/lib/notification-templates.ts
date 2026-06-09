@@ -8,7 +8,7 @@ import type { NotificationType } from '@/types';
  *   {name}     — user first name (e.g. "Daniele")
  *   {streak}   — current streak number (e.g. "7")
  *   {days}     — days since last session (e.g. "3")
- *   {topFood}  — most-frequent craving (e.g. "pizza")
+ *   {topFood}  — most-frequent trigger (e.g. "phone", "night")
  */
 
 interface Template {
@@ -20,58 +20,58 @@ interface Template {
 const DAILY_BY_WEEKDAY: Record<number, Template[]> = {
   // Sunday — gentle weekend check-in
   0: [
-    { title: '🌊 Sunday check-in', message: "How's the weekend feeling, {name}? A few minutes with me?" },
-    { title: '💜 Rest day', message: 'No pressure today. I just wanted to say hi.' },
+    { title: '🌿 Sunday check-in', message: "How's the weekend going, {name}? A few minutes with me?" },
+    { title: '🐼 Rest day', message: 'No pressure today. Just wanted to say hi.' },
   ],
-  // Monday — motivational kickoff
+  // Monday — grounded kickoff
   1: [
-    { title: '✦ Fresh week, {name}', message: 'New week, same Noit. Want to start it with a session?' },
-    { title: '🔥 Streak day', message: "You're at {streak} days. Keep the spark going." },
+    { title: '✦ Fresh week, {name}', message: 'New week, same calm. Want to start it grounded?' },
+    { title: '🌿 Steady day', message: "You're at {streak} clean days. One breath at a time." },
   ],
   // Tuesday — breath suggestion
   2: [
-    { title: '🌬️ Just breathe', message: '5 minutes of breath. That\'s all. Want to try?' },
-    { title: '💜 Quick pause', message: 'No words needed today — just breath with me?' },
+    { title: '🌬️ Just breathe', message: "5 minutes of breath, that's all. Want to try?" },
+    { title: '🐼 Quick pause', message: 'No words needed today — just breathe with me?' },
   ],
-  // Wednesday — midweek motivation
+  // Wednesday — midweek check-in
   3: [
     { title: '✦ Halfway there', message: 'Wednesday hits different. How are you holding up, {name}?' },
-    { title: '🌊 Midweek mood', message: "What's been the loudest feeling this week?" },
+    { title: '🌿 Midweek', message: "What's the urge been like this week?" },
   ],
   // Thursday — breath suggestion
   4: [
-    { title: '🌬️ Breath break', message: 'Thursday tension? Let\'s breathe through it together.' },
-    { title: '💜 Slow down', message: 'A few breaths can shift a whole afternoon.' },
+    { title: '🌬️ Breath break', message: "Thursday tension? Let's breathe through it together." },
+    { title: '🐼 Slow down', message: 'A few breaths can shift a whole afternoon.' },
   ],
-  // Friday — motivation
+  // Friday — steady
   5: [
-    { title: '🔥 Friday energy', message: '{streak} days strong. The weekend is yours.' },
+    { title: '🌿 Friday', message: '{streak} clean days. The weekend is yours to ride out.' },
     { title: '✦ Almost there', message: 'One more day, {name}. Want to check in?' },
   ],
   // Saturday — gentle check-in
   6: [
-    { title: '🌊 Weekend with me', message: "Saturday's a good day to slow down. Talk to me?" },
-    { title: '💜 No agenda', message: 'Just here whenever you want. No rush.' },
+    { title: '🌿 Weekend with me', message: "Saturday's a good day to slow down. Talk to me?" },
+    { title: '🐼 No agenda', message: 'Here whenever the wave hits. No rush.' },
   ],
 };
 
 /** Streak milestone templates — keyed by streak day. */
 const STREAK_MILESTONES: Record<number, Template> = {
-  3: { title: '🔥 3 days!', message: "You showed up 3 days in a row, {name}. That's the spark." },
-  7: { title: '✦ One week strong', message: '7 days with me. A real rhythm. Proud of you.' },
-  14: { title: '🔥 Two weeks', message: "14 days — this isn't a fluke. This is you." },
-  30: { title: '✦ 30 days', message: 'A full month, {name}. You haven\'t needed me as much lately — that\'s the point. 🌿' },
-  60: { title: '🔥 Sixty', message: '60 days. The craving knocks less. You opened the door anyway.' },
-  100: { title: '✦ One hundred', message: '100 days. I have no words. Just gratitude.' },
+  3: { title: '🌿 3 days!', message: "Three days clean, {name}. The wave keeps passing." },
+  7: { title: '✦ One week strong', message: '7 days. A real rhythm. Quietly proud of you.' },
+  14: { title: '🌿 Two weeks', message: "14 days — this isn't a fluke. This is you." },
+  30: { title: '✦ 30 days', message: "A full month, {name}. You haven't needed me as much lately — that's the point. 🌿" },
+  60: { title: '🐼 Sixty', message: '60 days. The urge knocks less. You sat with it anyway.' },
+  100: { title: '✦ One hundred', message: '100 days. I have no words. Just respect.' },
 };
 
 const STREAK_DAYS = [3, 7, 14, 30, 60, 100];
 
 /** Return-from-inactivity templates (3+ days no session). */
 const RETURN_TEMPLATES: Template[] = [
-  { title: '🌊 Hey, it\'s been a minute', message: "No pressure, {name} — Noit's here whenever you want." },
-  { title: '💜 Still here', message: "It's been {days} days. The door's open." },
-  { title: '✦ Missing you', message: 'Whenever you\'re ready. No catch-up needed.' },
+  { title: "🌿 Hey, it's been a minute", message: "No pressure, {name} — Stoppy's here whenever you want." },
+  { title: '🐼 Still here', message: "It's been {days} days. The door's open, no judgment." },
+  { title: '✦ Whenever you\'re ready', message: 'No catch-up needed. Just sit with me when a wave hits.' },
 ];
 
 interface TokenContext {
@@ -86,7 +86,7 @@ function applyTokens(template: Template, ctx: TokenContext): Template {
     '{name}': ctx.name?.split(' ')[0] ?? 'friend',
     '{streak}': String(ctx.streak ?? 0),
     '{days}': String(ctx.days ?? 0),
-    '{topFood}': ctx.topFood ?? 'craving',
+    '{topFood}': ctx.topFood ?? 'the urge',
   };
   const replace = (s: string) =>
     s.replace(/\{name\}|\{streak\}|\{days\}|\{topFood\}/g, (m) => tokens[m] ?? m);

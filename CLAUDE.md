@@ -1,217 +1,225 @@
-# NOIT — Emotional Craving Wellness App
+# STOPPY — NoFap Urge Wellness App
 
-Axolotl mascot **Noit** eats emotional cravings via 10-min AI chat. Target 18-28 EN. Zero shame, never clinical.
-**Stack:** Expo 54 / RN 0.81 / TS strict / Expo Router / Supabase+Google OAuth · Zustand · AsyncStorage · **Gemini 2.5 Flash-Lite** (single-shot + synthetic typewriter) · Reanimated 4 · react-native-svg · expo-linear-gradient · RevenueCat (TODO) · **pnpm**
+Panda mascot **Stoppy** helps ride out urges via 10-min AI chat. Rebrand of NOIT (axolotl/viola → panda/verde, food→trigger, mood→urge intensity). Store-safe, zero shame, never clinical. Target 18-28 EN.
+**Stack:** Expo 54 / RN 0.81 / TS strict / Expo Router / Supabase+Google OAuth (web+native) · Zustand · AsyncStorage · **Gemini 2.5 Flash-Lite** (single-shot + synthetic typewriter) · Reanimated 4 · **@shopify/react-native-skia 2.2.12 (mascotte)** · react-native-svg (solo SVG leggeri non-mascotte) · expo-linear-gradient · RevenueCat (TODO) · **pnpm**. Fasi 1-4 + migrazione Skia completate (`tsc --noEmit` exit 0). Source di verità design: `pandafap/mascotte-nofap.html` + `paywall-nofap.html`.
 
-## Mascot — Noit
-Chubby axolotl (Kirby). Body `#BCA8EE` · Belly `#D8C8FA` 60% · Cheeks `#F2B8CC` · Fins/Plumes `#A484D4`/`#C8B4F4` · Eyes `#1E1240` · Mouth `#F5A0B8` · Sparkle `#F5E060` · Aura radial white 28%→0. **ViewBox `-20 -22 240 252`** (height `size * 1.15`) — extended margins per mai tagliare mani/piedi/forchetta/piumini.
-**9 variants** (`NoitVariant`): `idle` · `listening` (head tilt + L fin up) · `thinking` · `eating` (X eyes, puffy cheeks 26×19, open mouth) · `happy` (^^ eyes, open mouth) · `excited` (star eyes r=15) · `wink` (L star + R closed) · `curious` (pupils up-left) · `eyes_closed` (downward arc, BreatheScreen).
-**Animations** (Reanimated `useAnimatedProps` for SVG — NOT `useAnimatedStyle`): `breathe` 1→1.034 @3.6s · eating 1.02↔1.12 @560ms + `jiggle` 0.97↔1.05 X/Y opposti · `blink` scaleY→0.07 @4.8s · `finL/R` ±8°/5° @3.6s · `float` 0→-7px @4s · `tilt` 0→-6° @4.2s · `antenna` (now drives plume-tip stars sway) `rotate(antenna*0.6, 100 30)` ±5° @4s · `sparkle` 0→1 @2.4s delays 0/800/1500ms.
-**useEffect split (critical):** `[state]` → `breathe`/`jiggle`/`tilt` (re-trigger eating wobble); `[]` mount only → `blink`/`finL/R`/`floatY`/`antenna`/`sp1/2/3`. **Static mode** (`static` prop): skip all `useEffect`, force `glow=false` + `showSparkles=false`. Safe per liste/chip — usata via `<NoitMini>` wrapper.
-**`eating` geometry** (Kirby puff): body `rx 96 ry 102 cy 118`, **head plumes scaled up**, belly `rx 68 ry 72 cy 130`, cheeks `rx 32 ry 24` cx 48/152, **fins fuori** cx 10/190 cy 130 rx 32 ry 18, **piedi sotto** cy 214 rx 22 ry 12. Mouth: dark ellipse rx 22 + pink interior + dark tongue.
-**✦ Signature (4 memorabili):**
-- **Axolotl head plumes** (3) — sostituiscono le "orecchie laterali" precedenti. Posizionate IN ALTO sulla testa, anatomia axolotl reale. Piumino sinistro cx 82 cy 18 rotate -22° · centro cx 100 cy 14 (slightly taller) · destro cx 118 cy 18 rotate +22°. Two-tone outer `#A484D4` rx 9 ry 15 + inner highlight `#C8B4F4` rx 6 ry 11. **Eating state**: scaled up + repositioned. Antenna+stella RIMOSSA.
-- **3 tiny stars on plume tips** — `#F5E060` con bordo `#E8C830` su ogni punta dei piumini (left ≈ 74,0 · center ≈ 100,-7 più grande · right ≈ 126,0). Animate via `antennaProps` (rotate `antenna*0.6` around `(100,30)`) per soft sway. Coordinate diverse per `eating` state.
-- **Bib** white `#FFFFFF` + bordo viola `#7B5BA9` 2px. **Visibile in TUTTI gli stati** (incluso `eating` con geometria scalata: cx 60-140 y 152-200, straps extended cx 10/190). Standard: y 142-188 con 2 horizontal straps che partono dal centro lati del bib (y 160) e si curvano fino ai lati del corpo (x 24/176 y 146). Stitching subtle `opacity 0.35`. **Stella gialla `#F5E060`** centrata (bordo `#E8C830`, shine `#FFF4A0`).
-- **Forchetta vera verticale** (no più rotate 18°) — posizionata SULLA mano destra (fin cx 172 cy 118). Grip CENTRATO a y 112-124 (= centro fin) cosicché la mano "stringe il punto medio". `<G transform>` solo `translate(14 12)` in eating. **4 rebbi sopra** `#E8E4F4` strokeWidth 4 con outline `#5C3E9C` 1.4 (visibilità) → fork head plate arrotondata + white highlight → **shaft `#E8E4F4`** strokeWidth 5 con outline scuro + white highlight → **grip wrap `#5C3E9C`** strokeWidth 7 al centro + 3 grip texture lines `#BCA8EE` → **stella `#F5E060` pommel sotto** (larger) + shine `#FFF4A0`. Visibile in ogni stato.
-- **Eye sparkle** (`Circle r=2.5 fill=white opacity=0.95`) top-left dentro ogni pupilla su `idle`/`listening`/`curious`/`thinking`/`wink`; r=3 in `excited`.
+## Mascot — Stoppy
+Chubby panda **seduto in meditazione** (gambe incrociate lotus, mani sul ginocchio, sguardo sicuro/concentrato, bambù appoggiato di lato come ancora di mindfulness). Body/head radial `#FFFFFF→#F7F2EA(60%)→#ECE4D6` · Tummy `#FFFFFF→#EDE6DA` · Black parts (ears/patches/arms/legs/nose/mouth/brows) `BLACK #0F0F0F` outer + `BLACK_SOFT #1A1A1A` inner-ear · **Iris forest green `#1C3E24`** · Cheek blush peach `rgba(255,148,128,0.27)` (variable `cheekFlush`) · Bamboo seg A `#8ED84A→#60AC2E→#3C7215` / seg B `#72BC36→#4C9020→#2C6010` / node `#3E8C1A→#246010` / leaves `#60AC2E`/`#4C9020`. **viewBox `2 44 224 380`** (`VB_X/Y/W/H`, render height `size*(380/224)≈size·1.70`) — croppa lo spazio morto sopra/sotto la figura seduta. Aura riposizionata sul baricentro (`top = renderH*0.41 − auraSize/2`).
+**9 variants** (`StoppyVariant`, alias `NoitVariant` per compat): `idle` · `listening` (head tilt) · `thinking` (pupille su) · `eating`→semantica **"resisting"** (occhi `><` stretti + 4 stress-lines, NON X-eyes da KO) · `happy` (^^ arc eyes + open mouth) · `excited` (star eyes) · `wink` · `curious` (pupils up-left) · `eyes_closed` (meditation, downward arc, BreatheScreen).
+**Animations** (Reanimated `useAnimatedProps` for SVG — NOT `useAnimatedStyle`): `cFloat` 0→-13px @4.2s · `cBlink` scaleY 1→0.02→1 @5.5s (lid dx sfasato +0.14s) · `cBambooSway` rotate 3.5°↔1° @3.8s pivot `(183,360)` (base a terra) · `breathe` 1→1.034 @3.6s.
+**useEffect split (critical):** `[state]` → `breathe`/wobble (re-trigger); `[]` mount only → blink/float/sway. **Static mode** (`static` prop): skip all `useEffect`, force `glow=false` + `showSparkles=false`. Safe per liste/chip — usata via `<StoppyMini>`.
 
-**Props:** `state` · `size` · `crown?` · `showSparkles?` · `glow?` · `static?` (disable anim/aura/sparkles).
+**Geometria (posa seduta — coordinate reali):**
+- **Head:** `circle cx 100 cy 152 r 76` (disegnata DOPO il body così lo copre → **testa attaccata, niente collo/gap**). **Ears:** outer `cx 44/156 cy 92 r 27`, inner `r 17`.
+- **Body seduto:** ellisse `cx 100 cy 288 rx 72 ry 78` che risale fino a sovrapporsi al fondo della testa (body top y210 vs head bottom y228). **Tummy** bianco al centro + **2 chest spots** neri ai lati (panda markings).
+- **Gambe lotus:** ginocchia allargate `cx 52/148 cy 356`, stinchi incrociati al centro `cy 372`, piante verso l'interno + polpastrelli rosa. Tonalità lasciate non-uniformate (`#0F0F0F`/`#1A1A1A`/`#262626`/`#2A2A2A`) per richiesta esplicita.
+- **Braccia:** banda nera spalle+collo (path testa→spalle, panda yoke) da cui escono **2 braccia distinte** che curvano verso l'interno-basso fino a posare la **mano (palmo-in-basso) sul ginocchio** (paw `cx 60/140 cy 346`, ellisse nera liscia, dorso appoggiato).
+- **Eye patches** angolati `cx 75/125 cy 158 rx 29 ry 22 rotate(∓12)` · **Eyes white** r 17 · **pupil** r 11 · **iris** r 6.6 `#1C3E24` convergenti dritte in avanti · **1 catchlight** r 3 · **Eyebrows** Q-curves `#0F0F0F` sw 4.2 piatte/angolate (calmo/determinato) · **Nose** rx 9 ry 6.5 + highlight · **Mouth** `M 86 208 Q 100 226 114 208` sw 3.6.
+- **Bambù** appoggiato a terra di lato (x≈157), 7 segmenti A/B alternati con nodi, 2 foglie (sx ~cy 52, dx ~cy 167), highlight stripe `rgba(255,255,255,0.26)` full-height.
 
-## Colors & Typography
-Source: `noit-design/*.html`. Purple (NOT orange). | BG gradient `#9272C2→#6A4AAC(55%)→#5C3E9C` `<PurpleBg />` 160° | Accent `#7B5BA9`/`#5C3E9C` btn/tab | Text `#2B1A52` / `rgba(43,26,82,0.52)` cards/muted | Card `rgba(255,255,255,0.92)` | Glow `rgba(255,255,255,0.14)` top | Mood Good/Mixed/Hard `#E6FAF0/#1A6B44`·`#FFF5E6/#7A5010`·`#FFE6F0/#8A1840` chips | Delta up `#1A6B44/rgba(26,107,68,0.12)` · down `#8A1840/rgba(138,24,64,0.12)` · neutral `rgba(43,26,82,0.55)/0.08` | Danger `#E05C5C` crisis |
-`<PurpleBg />`: L1 gradient 160° start(0.15,0) end(0.85,1) · L2 top glow h=40%. **DM Sans** 500-700. Radii: cards 20-26px · btn 18-22px · tag 12-14px.
+**✦ Signature (4):** Bambù verticale (sostituisce la forchetta) · Eye patches rotate ±12° · Iris verde forest `#1C3E24` · Cheek blush peach. (Bib + stella gialla di Noit RIMOSSI — un panda con bib è strano.)
+
+**Espressioni per-stato (occhi BIANCHI sopra le occhiaie nere — contrasto leggibile a 42px):** ogni stato ha forma occhio + sopracciglia + bocca completamente diverse (non più solo pupille spostate).
+- `happy` → archi `^^` su + sorriso aperto · `excited` → star eyes gialle + bocca O aperta · `wink` → sx tondo + dx arco wink + smirk asimmetrico · `curious` → tondi pupille up-left + O piccola sorpresa · `eyes_closed` → archi `⌣` giù + linea serena · `eating` → `><` stretti + 4 stress-lines + **V-furrow forte** sw 5.5 + **barra denti serrati** (Rect nero + denti `#E8E0D0` + 3 linee) · `thinking` → aperti pupille su + bocca laterale · `idle`/`listening` → tondi dritti + sorriso dolce con fossette (blink lids animati solo qui).
+- **Marker rapidi:** goccia sudore `#7FD7FF` su `eating` (resistenza) · scintilla verde `#9DF0C0` su `happy`/`excited` (calma). **cheekFlush:** 0.50 eating · 0.32 eyes_closed · 0.35 happy/excited/wink · 0.18 default.
+- **⚠️ Rendering: ora Skia, non più SVG** — la geometria sotto (coordinate, viewBox, path) resta valida 1:1, ma il rendering è migrato a `@shopify/react-native-skia` in `stoppy-skia.tsx` (vedi **§Skia Migration**). Il fix `useId()`/`url(#...)` per la collisione gradienti web **non serve più** (Skia usa shader inline, niente id globali). `Stoppy.tsx` è ora solo un wrapper.
+
+**Props:** `state` · `size` · `static?` · `glow?` · `crown?`/`showSparkles?` (legacy no-op `@deprecated`).
+
+## Skia Migration — mascotte SVG → Skia (2026-06-07)
+**Perché (obbligatorio, non ottimizzazione):** la mascotte `react-native-svg` (~150 nodi: 39 Circle, 27 Ellipse, 30 Path, 13 Rect, 9 Line + gradienti, **2.5× il Noit base**) + shared value Reanimated animati ogni frame **crasha NATIVAMENTE** su Android low-end (Xiaomi) — nessun ErrorBoundary JS lo cattura. Ogni `useAnimatedProps` su nodo SVG forza il bridge nativo per-attributo; con N nodi + driver attivi → crash secco. Skia disegna su **una sola surface GPU** → niente N nodi nativi, niente bridge per-attributo. **Lezione (handoff Noit): finché c'è UN solo nodo SVG dentro la mascotte, quella schermata può crashare → ZERO nodi SVG residui nella mascotte.**
+
+**Scope:** **Stoppy → 100% Skia, zero nodi `react-native-svg`** (verificato elemento-per-elemento contro il backup). Gli **altri SVG dell'app restano SVG** (stelle bg `index.tsx`, icona Google): leggeri + statici, non causavano il crash, convertirli sarebbe inutile.
+
+**Architettura (wrapper sottile, D8 shim pattern):**
+- **`src/components/stoppy-skia.tsx`** (`StoppySkia`) — TUTTA la logica Skia, 9 varianti, base condivisa + sotto-componenti `Eyebrows`/`Eyes`/`Mouth` per-stato (path inline SVG rifattorizzati in helper `stroke()`/`arc()` — stessa resa, meno righe).
+- **`src/components/Stoppy.tsx`** — ora **wrapper di 2 righe**: `export { StoppySkia as Stoppy }` + re-export `StoppyVariant`/`StoppyProps`. **API identica → i 13 consumer + `StoppyMini` invariati** (continuano `import { Stoppy as Noit }`).
+- **`Stoppy.svg.bak.txt`** — backup SVG originale (`.txt` → `tsc` lo ignora). ⏳ Cancellare DOPO conferma build su device.
+
+**Metodo conversione 1:1** (coordinate e path string identici all'SVG, non ri-tarati): `<Ellipse cx cy rx ry>`→`<Oval rect={rect(cx-rx,cy-ry,2rx,2ry)}>` (helper `ovalRect`) · `<Path d>`→`<Path path={d}>` (stessa stringa) · `<Circle>`→`<Circle>` · `<Rect rx>`→`<RoundedRect rect={rrect(rect(...),rx,rx)}>` · `<Line>`→`<Line p1 p2 style="stroke">` · `fill`→`color` · `stroke`+`strokeWidth`→`style="stroke"`+`color`+`strokeWidth`+`strokeCap="round"`.
+**ViewBox → root Group** (Skia non ha viewBox): `scale = size/VB_W`, `rootTransform = [{translateX:-VB_X*scale},{translateY:(-VB_Y+floatY)*scale},{scale}]`. Ogni coord interna resta lo STESSO numero. `renderH = size*(VB_H/VB_W)`.
+**Gradienti = shader inline** figli dello shape (`<RadialGradient c r colors positions>` / `<LinearGradient start end ...>`): **spariscono `useId` + `url(#...)`** (erano fix collisione DOM web di react-native-svg; Skia non ha id globali → problema inesistente). ⚠️ Le `%` SVG objectBoundingBox convertite in coord assolute sul bbox; in Skia il radial è **circolare** (non si deforma sull'ellisse) → su body/head (quasi quadrati) differenza minima, belly leggermente diversa, solo shading bianco→crema (da rifinire a occhio su device).
+
+**Animazioni (stesse 3 shared value, stesso timing)** via `useDerivedValue<Transforms3d>` legato al `transform` del `<Group>` (NON più `useAnimatedProps`): `floatY` (0↔-13 @2100ms → translateY root) · `bamboo` (3.5↔1° @1900ms) · `blink` (scaleY sequence, solo idle/listening). **Richiede `react-native-reanimated/plugin` in babel** (presente). `<Canvas>` nativo NON richiede Provider.
+**⚠️ Regola transform Skia (bug blink Noit):** **scale-around-point** (blink @y157) → `[{translateY:cy},{scaleY:v},{translateY:-cy}]` **SENZA `origin`**; **rotate-around-point** (bamboo @183,360; gambe/zampe/patches/foglie) → `[{rotateZ:rad}]` + `origin={vec(x,y)}` **SENZA translate manuale**. Mettere entrambi = doppio offset = "occhi che cadono".
+
+**Fix applicati in migrazione:** (1) `pointerEvents="none"` su View + entrambi i `<Canvas>` — il panda è dentro `<Pressable>` (home check-in → `/session`); senza, il Canvas nativo mangia il tap del genitore. (2) `bamboo` uniformato a `rotateZ`+`origin` (era translate manuale). (3) recuperata 1 highlight stripe bianca del 3° nodo bambù (saltata → Rect 12≠13, ora 13=13).
+**Verifica:** `tsc --noEmit` exit 0 · grep nodi SVG residui nella mascotte = 0 (solo 1 match in commento) · conteggio elementi SVG vs Skia allineato (differenze Path 30→7 = refactoring inline→helper; Circle +3 = ellissi rx=ry→Circle, legittimo). `StoppyMini` invariato (`static glow={false}` → salta useEffect+aura).
+**⏳ Da validare SOLO su device (build):** resa visiva (specie gradienti body/belly/head) · fluidità liste con molti `StoppyMini` (History/Insights, decine di Canvas statici) · conferma crash sparito.
+**TODO(web):** Skia su web richiede `LoadSkiaWeb()` (CanvasKit WASM) prima del primo render — gate in `_layout.tsx` guardato `Platform.OS==='web'`. **Rimandato di proposito** (crash era Android-nativo only); finché manca, panda vuoto su login/onboarding web. TODO annotato in `Stoppy.tsx`.
+
+## Colors & Typography (verde — sostituisce il viola di Noit)
+`<ForestBg />` (sostituisce `<PurpleBg />`), gradient 160°: `#0F2218→#0A180F(52%)→#070D09` + top glow overlay (40% h) `rgba(56,201,122,0.18)→0.05→transparent`. | **Primary mint `#38C97A`** (= ruolo `#5C3E9C`) | **Deep green `#1F6B4D`/`#1A8044`** CTA (= `#7B5BA9`) | Bamboo `#60AC2E` · Azzurro `#2B7DB8` charts | Text primary `#E8F5EE` · muted `rgba(232,245,238,0.52)`/`0.42` · inverse `#0F2218` | **Card bianche preservate** (D5) `rgba(255,255,255,0.92)` — cambia solo bg+accenti | CTA gradient `135° #38C97A→#1A8044` testo `#051008` shadow `rgba(56,201,122,0.28)` |
+**Mood/delta chips INVARIATI** (semantica universale verde=good/up, red=hard/down): up `#1A6B44/rgba(26,107,68,0.12)` · down `#8A1840/rgba(138,24,64,0.12)` · neutral. Danger `#E05C5C` crisis. **DM Sans** 500-700. Radii: cards 20-26px · btn 18-22px · tag 12-14px.
+Color sweep viola→verde: **267 sostituzioni in 14 file** (`#5C3E9C→#1A8044`, `#7B5BA9→#38C97A`, `#A484D4→#5BB87E`, `#1E1240/#2B1A52→#0F2218`, + manuale `#9B7DC8` clock onboarding). Card bianche + semantica delta/mood intatte.
 
 ## Tabs (4): Home · History · Insights · Profile
-**PulseCard ovunque** (`useSyncPulse`): wrap a tutte le card di Home/History/Insights/Profile (no più solo Home).
-TabBar (`src/components/TabBar.tsx`): bg `rgba(255,255,255,0.92)` · active `#5C3E9C` · inactive `rgba(92,62,156,0.38)` · h=88 absolute. Session opens as `/session` modal (no Noit tab).
+**PulseCard ovunque** (`useSyncPulse`): wrap a tutte le card. TabBar (`src/components/TabBar.tsx`): bg `rgba(255,255,255,0.92)` · active `#1A8044` · inactive `rgba(56,201,122,0.38)` · h=88 absolute. Session opens as `/session` modal (no Stoppy tab).
 
-**Home** — greeting + check-in card (idle/happy → `/session`) + `<TodayMoodDisplay />` in PulseCard (**mood BEFORE → AFTER** ultima sessione via `useRecentSessions()`: NoitMini before+after, freccia con delta pill +/- colorata, meta row con food+duration+timeAgo) + streak row (3 cards) + week bars + recent top 5 (`formatDuration(s.duration)`). All `useSyncPulse()`. `useFocusEffect` reload.
+**Home** — greeting + check-in card (idle/happy → `/session`) + `<TodayIntensityDisplay />` in PulseCard (**urge BEFORE → AFTER** ultima sessione: StoppyMini before+after via `stoppyVariantForIntensity`, freccia con delta pill +/- colorata, meta row con trigger+duration+timeAgo) + streak row (3 cards) + week bars + recent top 5. All `useSyncPulse()`. `useFocusEffect` reload. *(clean-streak hero + "I relapsed" = post-migrazione, D4)*
 
-**History** — range `2W/1W/1M` + 📅 `<CalendarPicker>` + "+" → `/session`. **Mode tabs** `All N / 💬 Feed N / 🌬️ Breathe N` + **trash icon button** (`marginLeft: 'auto'` nel ModeTabs row) → entra in **select mode**. Row: date badge + mode icon + food + recap preview + `formatDuration · time` + **mood column** (NoitMini before 26px → freccia → NoitMini after 32px). **Tap row → `<SessionDetailModal>` full-screen.** Tutte le row in `<PulseCard>`. Filter client-side da `useRecentSessions()`.
-**Select mode (multi-delete):** trash button toggle. Header bar in alto sulla lista mostra "N selected" + Cancel/Delete buttons. Ogni row mostra checkbox `#7B5BA9` a sinistra, tap on row → toggle selezione (non più apre detail). Delete confirm Alert → `Promise.all(deleteSession())` parallelo → reload. Border viola 2px su row selezionate. Bottom bar destra `#E05C5C` per delete confirm.
+**History** — range `2W/1W/1M` + 📅 `<CalendarPicker>` + "+" → `/session`. **Mode tabs** `All N / 💬 Feed N / 🌬️ Breathe N` + **trash icon** (`marginLeft:'auto'`) → **select mode**. Row: date badge + mode icon + trigger + recap preview + `formatDuration · time` + **urge column** (StoppyMini before 26px → freccia → after 32px). **Tap row → `<SessionDetailModal>`.** Tutte in `<PulseCard>`. Filter client-side da `useRecentSessions()`.
+**Select mode (multi-delete):** trash toggle → header "N selected" + Cancel/Delete, checkbox `#38C97A` per row, tap row → toggle. Delete confirm Alert → `Promise.all(deleteSession())` parallelo → reload. Border verde 2px su row selezionate.
 
-**SessionDetailModal** (`src/components/SessionDetailModal.tsx`) — full-screen `PurpleBg` + hero (back btn + mode chip + date + time). Card: title food + **mood row** (Before NoitMini 56px → freccia + delta → After NoitMini 56px) + stats row (Duration, Mood shift). **Recap-only** (Noit's recap box). **Niente sezione Conversation** — i messages non sono più persistiti.
+**SessionDetailModal** (`src/components/SessionDetailModal.tsx`) — full-screen `ForestBg` + hero (back + mode chip + date + time). Card: trigger title + **urge row** (Before StoppyMini 56px → freccia + delta → After 56px) + stats (Duration, **Urge shift**, delta invertito). **Recap-only** ("Stoppy's recap"). Niente sezione Conversation (messages non persistiti).
 
 **Insights** — range + calendar + Mode tabs. Cards:
-- **Mood chart adattivo** (dual line): bucket si adattano al range (1W=7 giorni, 2W=7 bucket di 2d, 1M=7 bucket di ~4d, calendar adattivo via `buildMoodSeries(rows, since, now)`). Linea **after solida** `#5C3E9C` + fill gradient, linea **before tratteggiata** `rgba(123,91,169,0.5)` strokeDasharray `4 5`. Guide lines a mood 1/3/5. Labels sotto.
-- **Average mood card** con **switch interno (Mood / Best time)** `<SwitchTabs>`:
-  - View `mood`: Before NoitMini → freccia + deltaPill → After NoitMini + footer "Average across N sessions"
-  - View `bestTime`: `<BestTimePanel>` mostra "You feel best after sessions started" + range orario (es. "4pm – 8pm") + deltaPill positivo, + mini bar chart 6 bucket (best bucket evidenziato `#5C3E9C`, negativi `rgba(138,24,64,0.45)`). Empty state se <3 sessioni.
-- **Heatmap weekday × hour bucket** (7 righe × 6 fasce `12a/4a/8a/12p/4p/8p`, color scale 0 → 0.28 → 0.58 → `#5C3E9C`, count in cella se >0)
-- **Cravings card** con **switch (Top / Mood)**:
-  - View `top`: bar list `food · barBg · N×` (count-based)
-  - View `mood`: `<MoodByCravingPanel>` mostra per food top 5: count, avg before→after, delta pill verde/rosso/neutro
+- **Urge chart adattivo** (dual line): bucket adattivi al range via `buildMoodSeries(rows, since, now)` (1W=7gg, 2W=7×2d, 1M=7×~4d). Linea **after solida** `#1A8044` + fill, **before tratteggiata** `rgba(56,201,122,0.5)` dash `4 5`. Label "Urge before vs after".
+- **Average urge card** con switch interno (Urge / Best time) `<SwitchTabs>`: view `mood` Before→freccia+deltaPill→After + "Average across N sessions"; view `bestTime` `<BestTimePanel>` "You feel best after sessions started" + range orario + mini bar chart 6 bucket. Empty se <3.
+- **Heatmap weekday × hour bucket** ("When urges hit", 7×6 fasce `12a/4a/8a/12p/4p/8p`, color scale 0→0.28→0.58→`#1A8044`, count se >0).
+- **Cravings card** ("Top triggers") con switch (Top / Relief): view `top` bar list `trigger · barBg · N×`; view `mood` `<MoodByCravingPanel>` per top 5 trigger: count, avg before→after, delta pill ("Relief by trigger").
 
-**Profile** — first name + 🔔 bell (apre `NotificationCenter`, badge rosso unread) + Noit hero (`streak` 🔥 + total sessions) + 3 stat cards in PulseCard (avg mood, total time, member since) + menu in PulseCard. `useFocusEffect` → `loadStreak` + `loadRecentSessions`.
+**Profile** — first name + 🔔 bell (`NotificationCenter`, badge rosso unread) + Stoppy hero (`streak` 🔥 + total sessions) + 3 stat cards (avg urge, total time, member since) + menu. `useFocusEffect` → `loadStreak` + `loadRecentSessions`.
 
-**Settings (4 voci, no dev):** **Notifications** `<Switch>` aggiorna `user.notifications_enabled` + `registerForPushNotifications()` + schedula reminder. Quando ON: inline TimePicker con **3 preset editabili** (☀️/🌤/🌙) — **tap card seleziona** (set `check_in_time` + ri-schedula), **2° tap sulla card già selezionata apre edit inline** (TextInput HH:MM autoFocus, onBlur/Submit → `normalizeTime` + persist in `user.reminder_presets` JSONB). Hint dinamico: "Tap to select · tap again to edit" / "Type a time like 08:30 — done auto-saves". **Subscription** → `PaywallModal`. **Privacy & data** → `PrivacyModal` full-screen `PurpleBg` (Export CSV + Delete account + link policy). **Help & Support** → `HelpModal` full-screen `PurpleBg` + Noit `happy` + 5 FAQ + `support@noit.app`.
+**Settings (4 voci):** **Notifications** `<Switch>` → `user.notifications_enabled` + `registerForPushNotifications()` + schedula reminder. ON: inline TimePicker con **3 preset editabili** (☀️/🌤/🌙) — tap card seleziona (set `check_in_time` + ri-schedula), 2° tap su card già selezionata apre edit inline (TextInput HH:MM autoFocus → `normalizeTime` + persist `user.reminder_presets` JSONB). Chip `overflow:'hidden'` + `minWidth:0`, TextInput `width:'100%'` (no overflow). Long-press apre edit su qualsiasi chip. **Subscription** → `PaywallModal`. **Privacy & data** → `PrivacyModal` full-screen `ForestBg` (Export CSV + Delete account + policy). **Help & Support** → `HelpModal` + Stoppy `happy` + 5 FAQ + `support@stoppy.app`.
 
-**Sign out** — `Alert.alert` conferma → `cancelSessionReminder()` fire-and-forget → `signOut()` (auth-store ora clear locale IMMEDIATAMENTE prima di chiamare `supabase.auth.signOut()` per evitare race) → `router.replace('/')` come belt-and-suspenders. `_layout.tsx` listener gestisce comunque il redirect via `onAuthStateChange`.
-
-**Reminder time picker UI fix:** chip ha `overflow: 'hidden'` + `minWidth: 0`, TextInput `width: '100%'` + `includeFontPadding: false`. Niente più overflow visivo quando si edita. Long-press su qualsiasi chip apre edit (anche unselected).
+**Sign out** — `Alert.alert` → `cancelSessionReminder()` fire-and-forget → `signOut()` (auth-store clear locale IMMEDIATO prima di `supabase.auth.signOut()` per evitare race) → `router.replace('/')` belt-and-suspenders. `_layout.tsx` listener gestisce comunque il redirect.
 
 ## Session Flow (`src/app/session.tsx`)
 ```
-food → mood-before → choice (Feed | Breathe + Continue) →
-  ├─ Feed:    Kirby eat anim → Gemini chat → end-mood → end (AI recap from chat)
-  └─ Breathe: 5min inhale/hold/exhale → end-mood → reflect (text) → end (AI from reflection)
+trigger → urge-before → choice (Talk | Breathe + Continue) →
+  ├─ Talk:    Gemini chat (+ Focus Ring mini-game) → urge-after → end (AI recap from chat)
+  └─ Breathe: 5min inhale/hold/exhale → urge-after → reflect (text) → end (AI from reflection)
 ```
-`Phase`: `food → mood → choice → active → end-mood → reflect? → end`
-**Zero-orphan DB pattern (refactored):** `startSession` NON inserisce più in DB. Sessione vive in-memory con `id: 'local-...'`. INSERT avviene SOLO al completamento del flusso end (`endSession`/`endBreatheSession`) via `insertCompletedSession(args)` con tutti i campi compresi `created_at` originale. Qualsiasi exit (back gesture, modal "Leave", app kill) → zero righe orfane in DB. `discardActiveSession()` è ora solo reset in-memory (no DB call). `deleteSession` esportato per uso in History.
-**Exit safety — `ExitConfirmModal`**: durante `active`, tap back → modal "Leave session?" con Noit `curious` 90px + "Keep going" (purple) / "Exit without saving" (dark red). Tap exit → reset in-memory + `router.replace('/(tabs)/home')`.
-**Food picker** (no preset grid): Noit `curious` + free `TextInput` + live preview (90×90 + capitalized label) + 5 popular presets. `resolveFood(input)`.
-**Mood picker (NoitMini swap)**: 5 white cards con `<NoitMini state={noitVariantForMood(o.m)} size={42}>` invece di emoji 😞🙁😐🙂😄. Selected = white bg + purple 2px border. Reused mood-before/after.
-**Choice screen**: 2 white cards (Talk/Breathe) — select-then-Continue. `starting` flag → "Starting…" + opacity 0.5.
-**ChatScreen (Feed) — `playEatingSequence()` replayable:** (1) `curious` → food fade-in spring + bob + rotate ±6°; (2) @900ms `excited` → @1400ms `eating`; (3) @1500ms 2 wind rings; (4) food shrink/rotate/arc/fade; (5) Kirby linger puffed; (6) @2900ms `happy` → @3700ms `listening`. Replay button. Status: "Thinking…"/"Mmm…"/"Yum!"/"Replying…"/"Listening". 10-min progress bar · Crisis banner static. Timeouts in `timeoutsRef` cleared on every call.
-**BreatheScreen:** 5-min countdown. Noit (210px, no sparkles): `happy` inhale/exhale, `eyes_closed` hold. Body puff scale 1.1↔0.95. Double aura. Breath cloud 70×40 fuori aura: inhale ty -110→-40, exhale ty -40→-130. Phases: inhale 4s / hold 4s / exhale 6s auto-advance. 3 dots, active 22px pill. "Finish" bottom.
-**ReflectScreen (Breathe only):** Noit `curious` 130px + "What just happened?" + **NoitMini recap row** ("You came in feeling [NoitMini 28px] · now [NoitMini 32px]") sostituisce gli emoji. Multiline TextInput. "Save reflection" + "Skip". Passa `reflection` a `endBreatheSession(mood_after, reflection)` → `interpretBreatheReflection()`.
-**EndScreen**: feed `endSession(moodAfter)`; breathe `endBreatheSession(moodAfter, reflection)`. **End chip con NoitMini** (24px) + label ("Calmer than before"/"Steady"/"You showed up") sostituisce emoji 😌🙂🤝.
-**Messages NON persistiti**: `endSession`/`endBreatheSession` salvano `messages: []` in DB. Solo `recap_text` resta. Risparmio storage + privacy migliore.
+`Phase`: `trigger → mood → choice → active → end-mood → reflect? → end`. Direzione metrica: **urge basso = bene → `delta = before − after`** (positivo = relief = verde).
+**Zero-orphan DB pattern:** `startSession({trigger})` NON inserisce in DB (sessione in-memory `id:'local-...'`). INSERT SOLO a fine flusso via `insertCompletedSession(args)` (incl. `created_at` originale + `context:{balanceRounds}`). Qualsiasi exit → zero righe orfane. `discardActiveSession()` = solo reset in-memory. `deleteSession` esportato.
+**Exit safety — `ExitConfirmModal`:** durante `active`, tap back → modal "Leave session?" con Stoppy `curious` 64px + "Keep going" / "Exit without saving". Tap exit → reset + `router.replace('/(tabs)/home')`.
+**TriggerPicker** (sostituisce FoodPicker, no PNG): Stoppy `curious` + **6 card preset emoji** `📱🌙😮‍💨🥱🫥😴` 2-per-riga (`width 48.5%`, icone 20px, label 12.5px) + **7ª card "Other" (✏️)** full-width: quando selezionata mostra `TextInput` inline (`autoFocus`) SULLA card al posto della label; il testo libero finisce nello stesso campo `trigger` (no SQL). Stato locale `otherMode`/`otherSelected` + `selectPreset`/`selectOther`.
+**Urge picker (StoppyMini swap):** 5 card con `<StoppyMini state={stoppyVariantForIntensity(o.m)} />` (urge basso = panda sereno). Mascotte grande in alto cambia faccia col mood selezionato (`idle` finché non selezioni). Titolo "How strong is the urge?", label Barely→Mild→Medium→Strong→Intense. Reused before/after.
+**Choice screen:** 2 card (Talk/Breathe) select-then-Continue. `starting` flag → "Starting…" + opacity 0.5.
+**ChatScreen (Talk):** Stoppy 128px sullo stage (`noitStage` paddingTop 18 / bottom 34, `chatArea` paddingTop 12 → arioso). Eating-animation cibo **disattivata** (`foodSource=null`, ~90 righe di `playEatingSequence`/wind rings/replay/timeout rimosse). Opening message Stoppy ("That urge showing up is okay…"). "Talk to Stoppy", header "Stoppy". 10-min progress bar · Crisis banner static.
+**BreatheScreen:** 5-min countdown. Stoppy 150px (no sparkles): `happy` inhale/exhale, `eyes_closed` hold. Cerchi ricalibrati (wrap 310, aura outer 300, inner 250) per contenere la figura seduta. Body puff scale 1.1↔0.95. Breath cloud. Phases inhale 4s/hold 4s/exhale 6s auto-advance. 3 dots, active 22px pill. "Finish".
+**ReflectScreen (Breathe only):** Stoppy `curious` 130px + "What just happened?" + StoppyMini recap row ("came in feeling [28px] · now [32px]"). Multiline TextInput. "Save reflection"/"Skip" → `endBreatheSession(mood_after, reflection)` → `interpretBreatheReflection()`.
+**EndScreen:** talk `endSession(moodAfter)`; breathe `endBreatheSession(moodAfter, reflection)`. End chip con StoppyMini 24px + label.
+**Messages NON persistiti:** salvano `messages:[]` in DB. Solo `recap_text` resta (privacy + storage).
+
+### Focus Ring mini-game (`FocusRingButton`, post-migrazione — sostituisce Balance)
+Difendi Stoppy dai pensieri intrusivi intrecciando un **anello di bambù** a furia di tap, **inline** sullo stage (chat resta visibile/scrivibile, timer + reply Gemini non si interrompono — niente Modal).
+- **Anello SVG ATTORNO al bottone 🎋** (basso-destra): `AnimatedCircle` r=27 via `useAnimatedProps` + `strokeDasharray`/`strokeDashoffset`, invisibile finché non tappi, + faint track + burst halo (`ringFlash`) allo snap + badge conteggio.
+- **Tap/decay:** `RING_FILL_PER_TAP 0.14` (~8 tap) · decay continuo loop `setInterval` ~30fps verso 0. Progress su shared value (UI thread per SVG) + mirror `useRef` JS. **Difficoltà crescente:** `decayRate = RING_BASE_DECAY(0.22) + rounds·RING_DECAY_STEP(0.08)`, cap `RING_MAX_DECAY(1.1)`.
+- **Completo →** burst, `onComplete()` bumpa `balanceRounds`, reset 0, Stoppy torna `listening`.
+- **Mood per riempimento (INVERTITO calmo→teso)** `moodForProgress`: 0=`listening` · <0.25=`happy` · <0.5=`wink` · <0.75=`curious` · ≥0.75=`eating`. `onBand` solo al cambio fascia.
+- **Status pill legata alla %** (non timer): `Listening`(0) → `Mmm`(>0,<0.75) → `Keep going`(≥0.75); 3 dots a soglie .34/.67. `onProgress` solo al cambio bucket (no re-render a ogni tick).
+- Store: `balanceRounds` + `incrementBalanceRound()` (reset in start/discard/reset), `context:{balanceRounds}` in `endSession` → colonna `sessions.context` jsonb (già in schema, no migration).
 
 ## Onboarding (`src/app/onboarding.tsx`) — 7 steps
 Render-conditional `{step===N && <Step/>}` in `<SlideStep key={step}>` (translateX dir×60→0 + opacity, 460ms). Save solo step 7: upserts `subscription_status='plus'` + `role_completed=true`.
-(1) Meet Noit `idle` (2) How it works `happy` 3 feature cards (3) Name+Birth year `curious` hard block <18 (4) Craving time `wink` (5) Feeling topics `excited` 10 chips (6) Disclaimer `idle` 2 checkboxes (7) Paywall `happy`+crown → `<PaywallSheet>` (Annual €3.99/mo · Monthly €7.99/mo · 7-day trial). Single source `src/components/PaywallModal.tsx`.
+(1) Meet Stoppy `idle` (2) How it works `happy` 3 feature cards (3) Name+Birth year `curious` hard block <18 (4) Urge time `wink` (5) Feeling topics `excited` 10 chips (6) Disclaimer `idle` 2 checkboxes (7) Paywall `happy` → `<PaywallSheet>` (Annual €3.99/mo · Monthly €7.99/mo · 7-day trial). Single source `src/components/PaywallModal.tsx`.
 
 ## Key Features
-**Streak:** giorni consecutivi ≥1 session. Milestones 3/7/14/30/60/100. `fetchStreak(userId)` — `toLocalYmd()` (NON UTC) + Set O(1) + handles "started yesterday" + while-loop backward. Rising-edge milestone in `loadStreak`: `prevStreak` vs nuovo → milestone → `pickStreakMilestone` + `insertNotification`.
-**MoodCheckin (NoitMini swap):** 5 cards con `<NoitMini state={noitVariantForMood(o.mood)} size={36}>` invece di emoji. `AnimatedMoodNoit` wrappa NoitMini in `Animated.View` con scale: idle=shared pulse, selected=spring 1.25→1.07. emojiBtn allargato 48→56px per ospitare Noit. Upserts `daily_moods`. `flat` prop per PulseCard.
+**Streak:** giorni consecutivi ≥1 session. Milestones 3/7/14/30/60/100. `fetchStreak(userId)` — `toLocalYmd()` (NON UTC) + Set O(1) + handles "started yesterday" + while-loop backward. Rising-edge milestone in `loadStreak`: `prevStreak` vs nuovo → `pickStreakMilestone` + `insertNotification`. *(clean-streak da relapse = `daysSinceRelapse`/`markRelapse`, hero UI post-migrazione)*
+**MoodCheckin (StoppyMini swap):** 5 card con `<StoppyMini state={stoppyVariantForMood(o.mood)} size={36}>`. `AnimatedMoodNoit` wrappa in `Animated.View` scale (idle=shared pulse, selected=spring 1.25→1.07). btn 56px. Upserts `daily_moods`. `flat` prop per PulseCard.
 **Sync pulse** (`use-pulse.ts`): module-level `makeMutable(1.0)`, single anim drive tutti i `PulseCard`.
-**Crisis** (`checkCrisis()`): client-side BEFORE ogni Gemini call. Keywords: suicide/kill myself/end it/self harm/cutting/not worth living/want to die/hurt myself/no reason to live.
+**Crisis** (`checkCrisis()`): client-side BEFORE ogni Gemini call. Keywords suicide/kill myself/self harm/ecc. → redirect a pro.
 
 ## Pricing
-| Free €0 — 1 session/day, 7 days history | Plus Annual €3.99/mo yearly — unlimited, insights, custom Noit | Plus Monthly €7.99/mo — same |
+| Free €0 — 1 session/day, 7 days history | Plus Annual €3.99/mo yearly — unlimited, insights, custom Stoppy | Plus Monthly €7.99/mo — same |
 
-## Database (`supabase/schema.sql` + `migrations/fase3_*.sql`)
-- **`users`** — id, email, name, avatar_url, role, role_completed, subscription_status(`free|plus|pro`), premium_expires_at, notifications_enabled, check_in_time, **push_token**, **reminder_presets jsonb** (`{morning,afternoon,evening}` default `09:00/14:00/21:00`), birth_year, craving_time, topics(text[]), disclaimer_accepted, created_at
-- **`sessions`** — id, user_id, food, mode(`feed|breathe`), duration(sec), mood_before/after(1-5), recap_text, messages(jsonb — sempre `[]` per nuove session), context(jsonb), created_at
+## Database (`supabase/schema.sql` + `migrations/fase3_*.sql` + `fase4_stoppy.sql`)
+- **`users`** — id, email, name, avatar_url, role, role_completed, subscription_status(`free|plus|pro`), premium_expires_at, notifications_enabled, check_in_time, push_token, reminder_presets jsonb (`{morning,afternoon,evening}` def `09:00/14:00/21:00`), birth_year, craving_time, topics(text[]), disclaimer_accepted, **last_relapse_date date**, created_at
+- **`sessions`** — id, user_id, **trigger** (rename da `food`), mode(`feed|breathe`), duration(sec), mood_before/after(1-5 = urge intensity), recap_text, messages(jsonb — sempre `[]`), context(jsonb — `{balanceRounds}`), created_at
 - **`daily_moods`** — id, user_id, date, mood(1-5), unique(user_id, date)
-- **`notifications`** — id, user_id, type(`session_reminder|daily_check_in|streak_milestone`), title, message, read, **data(jsonb)**, created_at
+- **`notifications`** — id, user_id, type(`session_reminder|daily_check_in|streak_milestone`), title, message, read, data(jsonb), created_at
 
-RLS: `auth.uid()=user_id` su tutte + **DELETE policies** (GDPR self-service). Trigger `on_auth_user_created` → auto-crea `users` row. Indexes: `sessions_user_created`, `sessions_user_mode_created`, `sessions_user_mood_after`. **Migration FASE 3 NON va aggiornata per le ultime modifiche** (stats derivate calcolate client-side, messages già jsonb).
-
-## Food Registry (`src/lib/food-registry.ts`)
-134 Kenney PNGs (CC0) in `src/assets/food-kit/`. `FOOD_REGISTRY` 134 entries · `ALIASES` ~80 synonyms · `POPULAR_PRESETS` (Pizza/Burger/Coca/Chocolate/Ice cream). **`resolveFood(input)`** 5-tier: exact alias → key/dashed → partial contains → substring → **Jaccard trigram fuzzy** (default `burger`). `getFoodImage(food)` wrapper.
+RLS `auth.uid()=user_id` + DELETE policies (GDPR). Trigger `on_auth_user_created` → auto-crea `users` row. **`fase4_stoppy.sql`:** `DO $$` guard `RENAME food→trigger` (idempotente, no-op se già trigger, add column su DB fresco) **PRIMA** di `CREATE INDEX sessions_user_trigger_created`; `ALTER users ADD last_relapse_date`. ⏳ **Va ancora eseguita su Supabase** o le nuove sessioni falliscono INSERT su `trigger`. Read usano fallback `row.trigger ?? row.food` per righe pre-migration.
 
 ## Gemini (`src/lib/gemini.ts`)
-**Model: `gemini-2.5-flash-lite`** in tutti i call (1000 req/day free vs 20 di flash). Qualità identica per chat brevi, throughput ~400 tok/s. Pay-as-you-go: $0.10 input / $0.40 output per 1M tokens (6× più economico di flash).
+**Model `gemini-2.5-flash-lite`** (1000 req/day free vs 20 di flash, $0.10/$0.40 per 1M tok). `temperature 0.95` + `topP 0.95`, `ABSOLUTE_MAX_WORDS 120`.
 
-**Persona v4 — friend naturale, conversazione vera, no terapia:**
-- WHO: chubby axolotl, emotional support friend, like a buddy texting at midnight
-- VOICE: real person not chatbot, contractions, casual phrasing, natural reactions, match energy
-- HOW: 2-3 complete sentences, **40-60 words**, end every sentence with `.!?` (NEVER trailing dots/ellipsis), end with one natural open question
-- DO NOT QUOTE USER'S WORDS BACK in quotation marks (sounds robotic) · don't analyze every line · just respond like a friend
-- IF WEIRD/CASUAL/OFF-TOPIC: roll with it like a friend would, no therapy framing
-- IF ADVICE REQUESTED: gently redirect to what's underneath
-- IF HARSH/ANGRY: stay calm, don't flinch, no lecture
-- EMOJI: drop in occasional emoji (`🌊 🍕 😅 ☁️ ✨ 💜 🙌` etc) when it fits the moment — max 1 per reply, not every reply
-- AVOID: clinical jargon (triggers/coping/emotional eating), "you should/have you tried", food moralizing, "...", "…"
+**`STOPPY_PERSONA` (alias `NOIT_PERSONA`) — companion NoFap store-safe:**
+- WHO: chubby panda, emotional support friend riding out an urge with you, like a buddy texting at midnight
+- BOUNDARIES (store-safe): **clean/non-explicit** (no contenuto sessuale), **mai dire "smetti"/"quit"**, no conta-giorni, no diagnosi, no shame, crisis → redirect a pro/feelings
+- VOICE: real person not chatbot, contractions, casual, match energy · HOW: 2-3 sentences **40-60 words**, end every sentence `.!?` (NO trailing dots/ellipsis), one natural open question
+- DO NOT quote user's words in quotes · don't analyze every line · redirect advice-requests a ciò che c'è sotto · stay calm if harsh
+- EMOJI: occasional max 1× quando fits (`🌿 🐼 💚 🌊 😅 ☁️ ✨`)
+- AVOID: clinical jargon (triggers/coping), "you should", moralizing, "...", "…"
+- `MOOD_LABEL` reinterpretato come **intensità urge** (barely…overwhelming). `needsQuitRedirect()` intercetta richieste "come smetto" → redirect.
 
-**Architecture refactor — single-shot + synthetic typewriter:** lo streaming raw Gemini chunk-by-chunk causava bug ("Sometimes you" tagliato, "......" filler). Ora:
-1. `generateNoitReply(ctx, signal)` chiama `generateContent` (NON `generateContentStream`) — un solo shot completo
-2. **Auto-retry** con budget maggiore se `finishReason === 'MAX_TOKENS'` || ends trailing dots || no terminator. First call `maxOutputTokens: 300`, retry: 500
-3. **Cleanup deterministico** su testo completo: `truncateToWordLimit(120 abs)` + `trimDanglingClause` (strip `[.…]{2,}\s*$`, collapse internal, close with `.` if no terminator)
-4. `streamConversation` wrappa: chiama `generateNoitReply` → `playbackAsTypewriter(text, onChunk, signal)` che splitta in `/\S+\s*/g` tokens ed emette ogni 35ms — **effetto typing naturale ma testo sempre completo e validato**
-5. AbortSignal interrompe sia generazione che playback
-6. Fallback "Sorry, I got distracted for a second!" se eccezione (es. quota 429)
+**Single-shot + synthetic typewriter** (eliminato streaming raw che tagliava parole / "......"):
+1. `generateNoitReply(ctx, signal)` → `generateContent` (un solo shot)
+2. **Auto-retry** budget maggiore se `finishReason==='MAX_TOKENS'` || trailing dots || no terminator (first `maxOutputTokens 300`, retry 500)
+3. **Cleanup deterministico:** `truncateToWordLimit(120)` + `trimDanglingClause` (strip `[.…]{2,}\s*$`, collapse internal, close con `.`)
+4. `streamConversation` → `generateNoitReply` → `playbackAsTypewriter(text, onChunk, signal)` (split `/\S+\s*/g`, 35ms/token) — typing naturale ma testo sempre validato
+5. AbortSignal interrompe gen+playback · Fallback "Sorry, I got distracted…" su eccezione (429)
 
-**Config:** `temperature: 0.95` + `topP: 0.95` per output naturale/vario. `ABSOLUTE_MAX_WORDS=120`.
-
-**`buildSessionPrompt`** snello: persona + context (food/mood + prior sessions) + conversation history + "Just continue the conversation naturally — like a friend texting back. 2-3 sentences, 40-60 words. End every sentence with proper punctuation (no trailing dots). Output only the reply text."
-
-**`generateRecap` v2 (logica corretta, lunghezza invariata 70w):** filtra messaggi vuoti, calcola `moodArc` (lifted/shifted/steady da delta), prompt journal entry FOR you FROM Noit. Rules: quote ONE concrete user word (no invent), name emotion under craving (not food), reference mood arc honestly, NO affermazioni generiche/advice/"next time", se conversation breve/silent → be honest don't fabricate. `maxOutputTokens 180` temperature 0.7. `truncateToWordLimit(80)`.
-
-**Functions:** `streamConversation(ctx, onChunk, onDone, signal)` (single-shot + typewriter playback) · `generateNoitReply(ctx, signal)` (internal, full reply with retry) · `playbackAsTypewriter(text, onChunk, signal)` (35ms per token via `sleep(ms, signal)`) · `streamBreathingGuide(phase, ...)` · `generateRecap(ctx)` (rifatto v2) · `interpretBreatheReflection(ctx)` · `generateInsight(patterns)` · `generateMilestoneMessage(days)` · `checkCrisis(text)` · `truncateToWordLimit(text, max?)` · `trimDanglingClause(text)`.
-
-**Session-store integration:** `sendMessage` riceve `onDone(finalCleanText?)` — se il testo finale differisce dall'accumulato (cleanup ha modificato), sostituisce la bubble messaggio finale via `set((s) => ({ messages: s.messages.map(...) }))` come safety net. In pratica raramente triggera ormai perché il typewriter playback riproduce SOLO il testo già validato.
+**`generateRecap` v2 (70-80w):** filtra messaggi vuoti, `moodArc` invertito (eased/climbed/steady da delta urge), journal entry FOR you FROM Stoppy. Quote ONE concrete user word (no invent), name emotion under urge, reference arc honestly, NO advice/"next time", se breve/silent → be honest. `maxOutputTokens 180` temp 0.7, `truncateToWordLimit(80)`.
+**Functions:** `streamConversation` · `generateNoitReply` (retry) · `playbackAsTypewriter` · `streamBreathingGuide` · `generateRecap` · `interpretBreatheReflection` · `generateInsight` · `generateMilestoneMessage` · `needsQuitRedirect` · `checkCrisis` · `truncateToWordLimit` · `trimDanglingClause`. `SessionContext.trigger` · role `'stoppy'`.
+**Session-store integration:** `sendMessage` riceve `onDone(finalCleanText?)` — safety net per rimpiazzare bubble se cleanup ha modificato (raramente triggera ormai). `noitState → stoppyState` (+ `setStoppyState`/`useStoppy`/`useStoppyState`).
 
 ## Notifications system
-Tipi: `session_reminder` · `daily_check_in` · `streak_milestone`.
-**Message UUID** (`session-store.newMsgId()` — counter + Date.now() + Math.random base36). `Message.id` obbligatorio.
-**NotificationCenter** (~165 righe) — Modal full-screen `PurpleBg`. Header back + "Mark all read". White cards (unread bordo purple). Item: emoji + title + body 2-line + timeAgo + dot. **Long-press → delete**. Empty Noit `happy`. Footer hint.
-**Push** (`src/lib/push-notifications.ts`): `registerForPushNotifications()` · `savePushToken(userId, token)` · `scheduleDailySessionReminder(timeStr)` (Expo DAILY) · `cancelSessionReminder()` · `sendLocalNotification()`.
-**Templates** (`src/lib/notification-templates.ts`): zero Gemini cost. `DAILY_BY_WEEKDAY` 14 (Lun/Mer/Ven motivation, Mar/Gio breath, Dom/Mer/Sab check-in) · `STREAK_MILESTONES` 6 · `RETURN_TEMPLATES` 3 inactive ≥3d. Token replacer `{name}`/`{streak}`/`{days}`/`{topFood}`.
-**Daily runner** (`maybeCreateDailyNotification`): idempotente via `Storage.getString('noit.last_daily_notif')`. Inactivity ≥3 → return notif. Else daily by weekday.
+Tipi `session_reminder · daily_check_in · streak_milestone`. **Message UUID** (`session-store.newMsgId()`). `Message.id` obbligatorio.
+**NotificationCenter** (~165 righe) — Modal full-screen `ForestBg`. Header back + "Mark all read". White cards (unread bordo verde). Item: emoji + title + body 2-line + timeAgo + dot. Long-press → delete. Empty Stoppy `happy`.
+**Push** (`src/lib/push-notifications.ts`): `registerForPushNotifications` · `savePushToken` · `scheduleDailySessionReminder` (Expo DAILY) · `cancelSessionReminder` · `sendLocalNotification`. Titolo "🌿 Stoppy is here".
+**Templates** (`src/lib/notification-templates.ts`, zero Gemini): 14 daily + 6 streak + 3 return riscritti voce Stoppy NoFap (clean days, urge/wave, no shame), `{topFood}`→"the urge". Token replacer `{name}`/`{streak}`/`{days}`.
+**Daily runner** (`maybeCreateDailyNotification`): idempotente via storage key `noit.last_daily_notif` (lasciata invariata — rinominarla orfanizzerebbe il dedup). Inactivity ≥3 → return notif, else daily by weekday.
 **Bootstrap `_layout.tsx`** post profile load: realtime subscribe + preload + savePushToken + maybeCreateDailyNotification. Cleanup `realtimeUnsub` on sign-out.
 
 ## Data export & Account deletion (GDPR)
-**CSV espanso** (`src/lib/data-export.ts`) — `exportUserDataAsCsv(userId)`: parallel fetch + `fetchSessionStats` 3 range (all-time/30d/7d). Sezioni:
-- `=== ACCOUNT ===` (incl. `reminder_presets`, `topics`, `disclaimer_accepted`)
-- `=== HISTORY — SESSIONS ===` · `=== HISTORY — DAILY MOODS ===`
-- `=== INSIGHTS — SUMMARY ===` (totals, avg before/after/delta, best_time_of_day per range)
-- `=== INSIGHTS — TOP CRAVINGS (mood by craving) ===` (food, count, avg_before, avg_after, avg_delta)
-- `=== INSIGHTS — MOOD SERIES OVER TIME ===` (bucket label, before, after)
-- `=== INSIGHTS — BEST TIME OF DAY ===` (time_of_day, range_label, avg_mood_delta)
-- `=== INSIGHTS — WHEN YOU CRAVE (heatmap) ===` (weekday × 6 hour buckets)
-
-Via `expo-file-system/legacy` UTF8 + `Sharing.shareAsync` OS share sheet.
-**Account deletion** (`src/lib/account-deletion.ts`) — `Promise.allSettled` su sessions+daily_moods+notifications → `DELETE FROM users`. NON cancella `auth.users` (richiede Edge Function `delete_own_auth_user()` con service_role — placeholder commentato in migration).
+**CSV espanso** (`src/lib/data-export.ts`) — `exportUserDataAsCsv(userId)`: parallel fetch + `fetchSessionStats` 3 range. Sezioni: `=== ACCOUNT ===` · `=== HISTORY — SESSIONS ===` (colonna `trigger`, fallback `food`) · `DAILY MOODS` · `INSIGHTS — SUMMARY` · `TOP TRIGGERS` (mood by trigger) · `URGE SERIES OVER TIME` · `BEST TIME OF DAY` · `WHEN URGES HIT` (heatmap). Via `expo-file-system/legacy` UTF8 + `Sharing.shareAsync`. Header/filename/dialog "Stoppy".
+**Account deletion** (`src/lib/account-deletion.ts`) — `Promise.allSettled` su sessions+daily_moods+notifications → `DELETE FROM users`. NON cancella `auth.users` (richiede Edge Function `delete_own_auth_user()` service_role — placeholder commentato).
 
 ## SessionStats — extended (`src/lib/supabase-sessions.ts`)
-`fetchSessionStats(userId, since, mode?)` calcola tutto client-side. Campi:
-- `total`, `feedCount`, `breatheCount`, `avgMoodBefore/After/Delta`, `totalDurationSec`
-- `byWeekdayHour: number[7][6]` heatmap (weekday Mon-first × 6 hour buckets `HOUR_BUCKETS` 12a/4a/8a/12p/4p/8p)
-- `moodSeries: MoodPoint[]` (7 bucket adattivi al range via `buildMoodSeries(rows, since, now)` — labels weekday se ≤8gg altrimenti month/day)
-- `topFoods: TopFood[]` top 5
-- `deltaByHourBucket: (number|null)[6]` avg delta per bucket
-- `bestTimeBucket: {label, avgDelta}|null` bucket con highest delta (require ≥1 session)
-- `moodByFood: {food, count, avgBefore, avgAfter, delta}[]` per top 5 foods
+`fetchSessionStats(userId, since, mode?)` client-side. Campi: `total`, `feedCount`, `breatheCount`, `avgMoodBefore/After/Delta` (**delta `before − after`** invertito = relief), `totalDurationSec`, `byWeekdayHour: number[7][6]` heatmap (`HOUR_BUCKETS` 12a/4a/8a/12p/4p/8p), `moodSeries: MoodPoint[]` (7 bucket adattivi via `buildMoodSeries`), `topFoods: TopFood[]` (campo legacy name, dati = trigger), `deltaByHourBucket: (number|null)[6]`, `bestTimeBucket: {label,avgDelta}|null`, `moodByFood: {food,count,avgBefore,avgAfter,delta}[]`. `WEEKDAY_LABELS=['Mo'..'Su']`. Read leggono `row.trigger ?? row.food`. `fetchLastRelapseDate()`/`daysSinceRelapse()`/`markRelapse()`. **Campi pubblici `topFoods`/`moodByFood`/`f.food` tenuti apposta** (rinominarli rifarebbe insights — solo la label è legacy, i dati sono trigger).
 
-`WEEKDAY_LABELS = ['Mo','Tu','We','Th','Fr','Sa','Su']`. `HOUR_BUCKETS` esportato.
+## Auth web
+- **`src/app/index.tsx`** — `handleLogin` platform-aware: web `supabase.auth.signInWithOAuth({provider:'google', redirectTo:window.location.origin})`, nativo `GoogleSignin` (`.configure` solo `if (Platform.OS!=='web')`).
+- **`src/lib/supabase.ts`** — `flowType:'pkce'`.
+- **`src/app/_layout.tsx`** — `handleSession(session)` condiviso + oltre a `onAuthStateChange` un **check proattivo** `getSession()` + `exchangeCodeForSession()` se URL ha `?code=` (su web l'evento può scattare prima del listener → utente bloccato su login con sessione valida). URL ripulito `history.replaceState`. Log `[auth] …`.
 
 ## File Structure
 ```
-src/app/_layout.tsx (auth listener + bootstrapUserSession) · index.tsx (Google OAuth) · onboarding.tsx (7 steps) · session.tsx (food→mood→choice→active→end-mood→reflect?→end + ExitConfirmModal, messages NOT persisted)
-src/app/(tabs)/ home.tsx (PulseCard+TodayMoodDisplay before/after) · history.tsx (range+calendar+ModeTabs+SessionDetailModal+PulseCard ovunque) · insights.tsx (mood chart adattivo+heatmap weekday×hour+switch Avg/BestTime+switch Top/MoodByCraving+PulseCard) · profile.tsx (PulseCard hero/stats/menu · Notifications tap-to-select tap-again-to-edit · Privacy/Help · CSV expanded · delete · sign out)
-src/components/ Noit.tsx (9 variants + bib lacci silhouette + forchetta vera + eye sparkles + static prop) · NoitMini.tsx (wrapper su Noit static + noitVariantForMood helper) · SessionDetailModal.tsx (recap-only) · PurpleBg · TabBar · MoodCheckin · TodayMoodDisplay (before→after NoitMini) · CalendarPicker · PaywallModal
+src/app/_layout.tsx (auth listener+handleSession+exchangeCode) · index.tsx (Google OAuth web+native) · onboarding.tsx (7 steps) · session.tsx (trigger→urge→choice→active→end-mood→reflect?→end + ExitConfirmModal + TriggerPicker + FocusRingButton, messages NOT persisted)
+src/app/(tabs)/ home.tsx (PulseCard+TodayIntensityDisplay) · history.tsx (range+calendar+ModeTabs+SessionDetailModal+select-mode) · insights.tsx (urge chart+heatmap+switch panels) · profile.tsx (hero/stats/menu · Notifications · Privacy/Help · CSV · delete · sign out)
+src/components/ stoppy-skia.tsx (panda seduto 100% Skia, 9 variants, espressioni per-stato, gradient inline, anim via useDerivedValue) · Stoppy.tsx (wrapper sottile → re-export StoppySkia as Stoppy + tipi, API invariata) · Stoppy.svg.bak.txt (backup SVG, da cancellare post-build) · StoppyMini.tsx (static wrapper + stoppyVariantForMood + stoppyVariantForIntensity) · ForestBg.tsx · SessionDetailModal · TabBar · MoodCheckin · TodayIntensityDisplay · CalendarPicker · PaywallModal
 src/features/notifications/ NotificationCenter.tsx · notification-store.ts
-src/lib/ auth-store (signOut clear locale immediato) · session-store (messages:[] no persist) · supabase · supabase-sessions (SessionStats extended) · supabase-notifications · push-notifications · notification-templates · daily-notification-runner · data-export (5 nuove sezioni INSIGHTS) · account-deletion · gemini (persona v3 friend+advice/violent handlers, sentence-aware streaming, recap v2 moodArc) · food-registry · format · use-pulse · storage · i18n
-src/translations/ en.json + it.json
-src/types/index.ts NoitState 9 + Message.id + Notification.data? + User.reminder_presets + User.push_token
-supabase/migrations/ schema.sql + fase3_notifications_and_deletion.sql (push_token, reminder_presets, data jsonb, DELETE policies, 3 indexes)
+src/lib/ auth-store · session-store (trigger, stoppyState, balanceRounds, messages:[]) · supabase (pkce) · supabase-sessions (trigger I/O, delta invertito, relapse) · supabase-notifications · push-notifications · notification-templates · daily-notification-runner · data-export (trigger cols) · account-deletion · gemini (STOPPY_PERSONA store-safe, needsQuitRedirect) · format · use-pulse · storage · i18n
+src/translations/ en.json + it.json (name Stoppy + tagline NoFap)
+src/types/index.ts StoppyState 9 (+alias NoitState) · Intensity 1..5 · Trigger · Session.trigger/.context · Message.role 'stoppy' · User.last_relapse_date
+supabase/migrations/ schema.sql + fase3_*.sql + fase4_stoppy.sql (food→trigger rename, last_relapse_date, index)
+CLAUDE.md (questo file — spec + stato Stoppy, file di verità)
+pandafap/ mascotte-nofap.html · paywall-nofap.html (design source) · promptimplement.md (playbook rebrand)
 ```
+**Cancellati nel cleanup (Fase 4):** `Noit.tsx`/`NoitMini.tsx`/`PurpleBg.tsx` (shim), `TodayMoodDisplay.tsx`, `FoodIcon.tsx`, `food-registry.ts` + intera `assets/food-kit/` (~200 PNG Kenney).
 
 ## Key Patterns
-**Zustand atomic selectors** · **Reanimated SVG** `useAnimatedProps` NOT `useAnimatedStyle` · **Noit useEffect split + static prop** · **Eating geometry** body cresce → fins+feet riposizionati · **NoitMini = Noit static** wrapper safe per liste (no Reanimated overhead) · **noitVariantForMood** (5 stati visivamente DISTINTI): 1→`eating` (X eyes, knocked out), 2→`eyes_closed` (heavy), 3→`curious` (pupils up-left), 4→`wink` (playful), 5→`happy` (beaming) · **PulseCard ovunque** (Home+History+Insights+Profile) via `useSyncPulse` shared makeMutable · **Calendar** measureInWindow Modal escape · **Crisis** client-side BEFORE sendMessage · **Choice** select-then-Continue · **Replay** timeoutsRef cleared every call · **Food matching** never throw (Jaccard fuzzy) · **Breathe ≠ Feed recap** (chat vs reflection) · **formatDuration** sempre · **ModeTabs filter** `mode?` param · **Zero-orphan DB** session vive in-memory finché non completa flusso end → SOLO ALLORA `insertCompletedSession()` · **Messages NOT persisted** (privacy + storage) · **Single-shot Gemini + typewriter playback** (full reply validated, 35ms per token playback, AbortSignal-aware) · **Auto-retry on truncation** (MAX_TOKENS/trailing dots/no terminator) · **Recap v2 moodArc** quote ONE word, no parrot, no advice · **Editable reminders** tap-select tap-again-to-edit + persist `user.reminder_presets` JSONB · **Multi-delete History** trash button in ModeTabs → select mode → `Promise.all(deleteSession)` · **Insights stats client-side** (best time, mood by food, heatmap, mood series adattivo — zero nuove SQL) · **CSV multi-section** include analytics 3 range · **SignOut**: auth-store clear locale FIRST poi `supabase.auth.signOut()` (no race) + `router.replace('/')` belt-and-suspenders · **Privacy/Help modal** full-screen `PurpleBg` + Noit hero + card bianca `borderTopLeftRadius:30` · **ViewBox extended** `-20 -22 240 252` height×1.15 per mai tagliare hands/feet/fork/plumes.
+**Zustand atomic selectors** · **Mascotte Skia** (no più SVG): `<Canvas>` + primitive Skia, anim via **`useDerivedValue<Transforms3d>`** legato al `transform` del `<Group>` (NON `useAnimatedProps`) · **regola transform Skia:** scale-around-point = translate-scale-translate manuale SENZA `origin`; rotate-around-point = `rotateZ`+`origin` SENZA translate manuale · **gradient inline Skia** (no `useId`/`url(#)` — niente collisione id) · **`pointerEvents="none"` sui Canvas** (mascotte dentro Pressable) · **wrapper sottile `Stoppy.tsx`→`StoppySkia`** (API invariata, swap trasparente) · **mascotte 100% Skia, zero SVG residui** (un solo nodo SVG → crash nativo Android) · **Stoppy useEffect split + static prop** · **espressioni per-stato** occhi bianchi + sopracciglia + bocche ternarie · **StoppyMini = Stoppy static** wrapper safe per liste · **stoppyVariantForMood** (5 distinti) + **stoppyVariantForIntensity** `(N)=stoppyVariantForMood(6−N)` (urge basso = panda sereno): Barely=`happy` · Mild=`wink` · Medium=`eyes_closed` · Strong=`curious` · Intense=`eating` · **PulseCard ovunque** via `useSyncPulse` · **Crisis** client-side BEFORE sendMessage · **needsQuitRedirect** store-safe · **Choice** select-then-Continue · **TriggerPicker** 6 chip + "Other" scrivibile sulla card (no SQL) · **Zero-orphan DB** in-memory finché non completa → `insertCompletedSession()` · **Messages NOT persisted** · **Single-shot Gemini + typewriter** (validato, 35ms/token, AbortSignal) · **Auto-retry on truncation** · **Recap v2 moodArc invertito** · **delta `before − after`** invertito ovunque (urge basso = relief = verde, lezione playbook: NON riscrivere UI, inverti il calcolo) · **Focus Ring inline** (no Modal, chat non si interrompe) · **Editable reminders** tap-select tap-again-edit · **Multi-delete History** select mode · **Insights stats client-side** · **CSV multi-section** · **SignOut** clear locale FIRST · **shim retrocompat poi cleanup PER ULTIMO** (alias `Stoppy as Noit` → zero modifiche JSX) · **campi pubblici `topFoods`/`moodByFood` legacy-name tenuti** · **fallback DB `trigger ?? food`** per righe pre-migration · **viewBox seduta `2 44 224 380`** render×1.70.
 
 ## Environment
 ```
 EXPO_PUBLIC_SUPABASE_URL= · EXPO_PUBLIC_SUPABASE_ANON_KEY= · EXPO_PUBLIC_GEMINI_API_KEY= · EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID= · EXPO_PUBLIC_REVENUECAT_IOS_KEY= (TODO) · EXPO_PUBLIC_REVENUECAT_ANDROID_KEY= (TODO)
 ```
+Branding store: `package.json` name `stoppy` · `env.ts` (source di `app.config.ts`) NAME `Stoppy`, scheme `stoppy`/`stoppy.preview`, bundleId/package `com.stoppy.app(.development/.preview)` · `app.config.ts` slug `stoppy` + splash/adaptiveIcon `#0F2218` · `app.json` fallback statico idem.
 
-## ✅ Done (latest session)
-**Mascot redesign:**
-- **Axolotl head plumes** (3) sostituiscono "orecchie laterali" — anatomia axolotl reale, two-tone outer+inner highlight, posizionate IN ALTO sulla testa con rotate ±22°. Antenna+stella RIMOSSA.
-- **3 mini-stelle gialle** sulle punte dei piumini (left/center bigger/right), animate via `antennaProps` per soft sway, coordinate diverse per `eating`.
-- **Bib visibile in TUTTI gli stati** (incluso `eating` con geometria scalata). Posizione più bassa e correttamente posizionata, 2 horizontal straps al posto dei verticali.
-- **Forchetta verticale (no rotate)** posizionata SULLA mano destra, grip centrato a y 118 = centro fin. Colori più visibili (`#E8E4F4` body + `#5C3E9C` outline).
-- **ViewBox extended** `-20 -22 240 252` (size×1.15) per mai tagliare mani/piedi/forchetta/piumini.
+## Decisioni di prodotto — ✅ CONFERMATE
+| D1 Metrica | **Clean streak** (giorni dall'ultimo relapse) + "I relapsed" — *feature post-migrazione* |
+| D2 `food`→? | **`trigger`** (phone/night/stressed/bored/lonely) — niente PNG |
+| D3 Flow | `trigger → urge-before → choice → active → urge-after → reflect? → end` |
+| D4 Mini-game | ✅ **Focus Ring** (incanali l'energia dell'urge, store-safe; era "Balance") |
+| D5 Card style | ✅ **Card bianche** (cambia solo ForestBg + accenti verdi) |
+| D6 Persona | Stoppy NoFap **store-safe** (no sessuale, no "smetti", redirect feelings) |
+| D7 Direzione | ✅ **Urge basso = bene** → `delta = before − after` |
+| D8 Naming | shim retrocompat (`Noit.tsx`→`Stoppy`) per velocità, cleanup PER ULTIMO |
 
-**Session & DB:**
-- **Zero-orphan DB pattern**: rimosso `createSession`+`finalizeSession`. `insertCompletedSession()` chiamato SOLO a fine flusso. Qualsiasi exit → in-memory reset, mai righe DB orfane. `deleteSession` esportato.
-- **MoodPicker NoitMini swap**: 5 cards con NoitMini (42px) invece di emoji. Mapping: 1→`eating`, 2→`eyes_closed`, 3→`curious`, 4→`wink`, 5→`happy`.
-- **ReflectScreen NoitMini swap**: "You came in feeling [NoitMini] · now [NoitMini]" inline al posto degli emoji.
-- **EndScreen chip NoitMini swap**: chip con NoitMini 24px + label, no più emoji.
-- **MoodCheckin NoitMini swap**: AnimatedMoodNoit (era AnimatedEmoji), btn 56px.
-- **TodayMoodDisplay empty state**: NoitMini `curious` 44px al posto di ✨.
-
-**History UX:**
-- **Multi-delete via select mode**: trash icon nei ModeTabs (`marginLeft: 'auto'`) → entra in select mode. Checkbox `#7B5BA9` su ogni row, header bar "N selected" + Cancel/Delete. `Promise.all(deleteSession)` parallelo.
-- Rimosso long-press (UX più chiara).
-
-**Profile UX:**
-- **Reminder time picker fix**: `overflow: 'hidden'` + `width: '100%'` per TextInput → niente più overflow quando si edita. Long-press apre edit su qualsiasi chip.
-
-**Chat UX (Gemini overhaul):**
-- **Model switch**: `gemini-2.5-flash` → `gemini-2.5-flash-lite` (1000 req/day free vs 20, $0.10/$0.40 per 1M tok vs $0.30/$2.50).
-- **Single-shot + synthetic typewriter**: eliminato streaming raw che causava "Sometimes you" / "......". Ora: `generateNoitReply` con auto-retry → `playbackAsTypewriter` 35ms/token.
-- **Persona v4** naturale, no terapia: "Don't quote user's words in quotation marks. Don't analyze every single thing. Just respond like a friend would." Word count 40-60, no trailing dots ANYWHERE.
-- **Emoji**: Noit ora occasionally usa emoji (`🌊 🍕 😅 ☁️ ✨ 💜 🙌`) max 1× quando fits.
-- **trimDanglingClause**: strip trailing `[.…]{2,}`, collapse internal `....`→`.`, close with `.` if no terminator.
-- **Auto-retry**: detecta `MAX_TOKENS` / trailing dots / no terminator → retry con maxOutputTokens 500.
-- **Session-store integration**: `onDone(finalCleanText?)` safety net per rimpiazzare bubble se cleanup ha modificato.
-
-**Done precedenti:** Auth · Onboarding 7 steps · Supabase schema+RLS+trigger · 4 tabs · Streak (toLocalYmd) · PurpleBg/TabBar · useSyncPulse · Week bars · CalendarPicker · PaywallModal · Gemini crisis · ExitConfirmModal · Notifications toggle+TimePicker · Message UUID · Feed eating anim v2 · BreatheScreen v2 + ReflectScreen · History/Insights real data · NotificationCenter · Push notif · Template-based notif · Daily runner · Streak milestone trigger · Bootstrap · Account deletion (RLS DELETE) · Privacy/Help modal · Legacy cleanup · i18n stub · Bib v1 + Forchetta v1 + NoitMini wrapper · TodayMoodDisplay before→after · SessionDetailModal · Insights switch panels · SessionStats extended · PulseCard ovunque · Reminder editable · Sign out fix · Recap v2 moodArc · Messages NOT persisted · CSV export espanso.
+## ✅ Done
+**Migrazione Skia mascotte** (2026-06-07): `stoppy-skia.tsx` (panda 100% Skia, 9 varianti, 1:1 da SVG, gradient inline, anim via `useDerivedValue`) · `Stoppy.tsx` → wrapper sottile (API invariata, 13 consumer + `StoppyMini` intatti) · backup `Stoppy.svg.bak.txt` · fix `pointerEvents="none"` (tap-through Pressable) + bamboo `rotateZ`+origin + recupero highlight stripe bambù · `tsc` exit 0 · zero nodi SVG residui nella mascotte. ⏳ validazione device + crash-fix da confermare con build. Vedi §Skia Migration.
+**Fase 1 — Mascotte + colori:** `Stoppy.tsx` (port SVG da `mascotte-nofap.html`, iris verde, blush peach, 9 varianti) · `StoppyMini.tsx` · `ForestBg.tsx` · shim retrocompat (13 consumer zero modifiche) · color sweep 267 sost. 14 file (card bianche + semantica delta intatte) · `tsc` exit 0, zero residui viola.
+**Redesign mascotte SEDUTA** (2026-05-30 bis): viewBox `2 44 224 380`, testa attaccata (no collo), gambe lotus, banda spalle+2 braccia → mani sul ginocchio, chest spots, sguardo sicuro (pupille r11 + 1 catchlight + sopracciglia piatte), mani palmo-in-basso, bambù a terra, costanti `BLACK`/`BLACK_SOFT`.
+**TriggerPicker** (2026-05-30 bis): 6 card emoji 2-per-riga + card "Other" (✏️) scrivibile inline sulla card (no textbox sempre visibile, no SQL).
+**Espressioni distinte** (2026-05-30 ter): occhi BIANCHI sopra occhiaie (contrasto a 42px), forma occhio + sopracciglia + bocca per-stato, marker sudore/scintilla, cheekFlush variabile, swap mapping urge Mild↔Strong.
+**Fase 2 — Foundation NoFap** (2026-05-30): `fase4_stoppy.sql` (food→trigger rename + last_relapse_date + index) · types (Intensity/Trigger/StoppyState/Session.trigger/Message.role'stoppy'/User.last_relapse_date) · `supabase-sessions` (trigger I/O + delta invertito + relapse fns) · `gemini` (STOPPY_PERSONA store-safe + needsQuitRedirect + arc invertito) · `session-store` (trigger/stoppyState) · notification-templates/push/data-export voce Stoppy NoFap.
+**Fase 3 — UI/copy** (migrazione 1:1): TriggerPicker, eating-anim disattivata, urge labels, copy sweep "Noit"→"Stoppy" in tutti gli screen, insights label/switch reinterpretati, `stoppyVariantForIntensity`.
+**Fase 4 — Cleanup + branding** (2026-05-29): switch import a componenti reali (alias `Stoppy as Noit`, JSX intatto), `TodayMoodDisplay → TodayIntensityDisplay`, cancellati shim+legacy+food-kit, branding store (package/env/app.config/app.json/translations).
+**Focus Ring mini-game** (2026-05-30 quater, sostituisce Balance): anello SVG sul bottone, tap/decay accelerante per round, mood invertito calmo→teso, completa→`listening`, status pill legata alla %, inline (no Modal). + pulizia eating morto (~90 righe).
+**Fix proporzioni** (2026-05-30 quater): Stoppy chat 128px · Breathe 150px + cerchi 310/300/250 · ExitModal 64px · mood picker mascotte dinamica.
+**Auth web:** Google OAuth web+native platform-aware + pkce + getSession/exchangeCode fallback. **Fix mascotte web:** gradient id univoci via `useId`.
+**Done precedenti (ereditati NOIT):** Auth · Onboarding 7 steps · Supabase schema+RLS+trigger · 4 tabs · Streak (toLocalYmd) · useSyncPulse · CalendarPicker · PaywallModal · Crisis · ExitConfirmModal · Notifications+TimePicker · NotificationCenter · Push+template+daily runner · Streak milestone · Bootstrap · Account deletion · Privacy/Help modal · SessionDetailModal · Insights switch panels · SessionStats extended · PulseCard ovunque · Reminder editable · Sign out fix · Recap v2 · Messages NOT persisted · CSV export espanso.
 
 ## 🚧 TODO
-RevenueCat · Noit customization · Streak freeze (Pro) · Milestone celebration UI · Share card 9:16 · Push notif server-side (Edge Function) · `delete_own_auth_user()` Edge Function · Privacy policy URL · Web polish · IT translations · Asset food popolari mancanti.
+**Build su device + validare migrazione Skia** (confermare crash Android sparito + resa visiva panda, specie gradienti body/belly/head + fluidità liste `StoppyMini`) → poi **cancellare `Stoppy.svg.bak.txt`** · **Skia su web** (`LoadSkiaWeb()` CanvasKit WASM gate in `_layout.tsx`, `Platform.OS==='web'`) — finché manca panda vuoto su login/onboarding web · **Eseguire `fase4_stoppy.sql` su Supabase** (necessario o nuove sessioni falliscono INSERT su `trigger`) · clean-streak hero + "I relapsed" su home (D1) · app icon/splash panda · privacy policy URL reale · rating 17+ · RevenueCat · `delete_own_auth_user()` Edge Function · Push server-side · IT translations polish · milestone celebration UI · share card 9:16 · diversificare ulteriormente le 9 varianti.
+
+## ✦ Playbook rebrand (dal `pandafap/promptimplement.md` — ordine d'oro, evita "pagina bianca")
+**Ordine 8 step:** (1) Foundation (types + SQL migration, nessun import rotto) → (2) Atoms nuovi (`ForestBg`, `TriggerIcon`) → (3) Mascotte (`Stoppy.tsx` da HTML + `StoppyMini`) → (4) Backend (session-store, gemini persona, supabase-sessions, notification-templates, data-export) → (5) Shared components (import + colori) → (6) Screens (home→history→insights→profile→session→onboarding→index) → (7) **Cleanup finale** (cancella `Noit.tsx`/`NoitMini.tsx`/`PurpleBg.tsx`/`food-registry.ts` PER ULTIMI) → (8) Verifica (`tsc --noEmit` + grep residui + run).
+**3 regole anti-disastro:**
+1. **Cancella i componenti base per ULTIMI** (toglierli prima di aggiornare i ~21 import → pagina bianca).
+2. **Nella migration SQL i rename colonna vanno PRIMA dei `CREATE INDEX`** (altrimenti `column does not exist`).
+3. **Se la metrica si inverte di senso, NON riscrivere la UI: inverti il calcolo del delta** (`before − after`).

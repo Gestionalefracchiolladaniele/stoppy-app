@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { PurpleBg } from '@/components/PurpleBg';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { useAuthStore } from '@/lib/auth-store';
 import type { Notification, NotificationType } from '@/types';
 import { useNotificationStore } from './notification-store';
@@ -19,8 +19,8 @@ const TYPE_ICON: Record<NotificationType, string> = {
 };
 
 const TYPE_COLOR: Record<NotificationType, string> = {
-  session_reminder: '#7B5BA9',
-  daily_check_in: '#9272C2',
+  session_reminder: '#38C97A',
+  daily_check_in: '#5BB87E',
   streak_milestone: '#E69B3F',
 };
 
@@ -58,7 +58,7 @@ export function NotificationCenter({ visible, onClose }: NotificationCenterProps
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' }}>
+      <View style={{ flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' }}>
         <PurpleBg />
 
         <View style={styles.header}>
@@ -147,8 +147,8 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   emptyIcon: { fontSize: 44, marginBottom: 10 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#2B1A52', marginBottom: 4 },
-  emptyBody: { fontSize: 13, color: 'rgba(43,26,82,0.55)', textAlign: 'center', lineHeight: 19 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#0F2218', marginBottom: 4 },
+  emptyBody: { fontSize: 13, color: 'rgba(15,34,24,0.55)', textAlign: 'center', lineHeight: 19 },
   item: {
     backgroundColor: 'rgba(255,255,255,0.85)',
     borderRadius: 18,
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   itemUnread: {
     backgroundColor: 'rgba(255,255,255,0.96)',
-    borderColor: 'rgba(123,91,169,0.4)',
+    borderColor: 'rgba(56,201,122,0.4)',
   },
   iconCircle: {
     width: 42, height: 42, borderRadius: 14,
@@ -166,9 +166,9 @@ const styles = StyleSheet.create({
   },
   icon: { fontSize: 20 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  itemTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: '#2B1A52' },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#7B5BA9' },
-  itemBody: { fontSize: 13, color: 'rgba(43,26,82,0.7)', marginTop: 3, lineHeight: 18 },
-  itemTime: { fontSize: 11, color: 'rgba(43,26,82,0.4)', marginTop: 6, fontWeight: '500' },
+  itemTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: '#0F2218' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#38C97A' },
+  itemBody: { fontSize: 13, color: 'rgba(15,34,24,0.7)', marginTop: 3, lineHeight: 18 },
+  itemTime: { fontSize: 11, color: 'rgba(15,34,24,0.4)', marginTop: 6, fontWeight: '500' },
   hint: { fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 12 },
 });

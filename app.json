@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "Noit",
-    "slug": "noit",
+    "name": "Stoppy",
+    "slug": "stoppy-app",
     "owner": "praticantisokagakkai",
     "version": "1.0.0",
     "extra": {
       "eas": {
-        "projectId": "c3a711e8-1d8a-496d-9db3-4a2139c6c322"
+        "projectId": "f6803869-91b0-4a05-ad3c-a42939c6852a"
       }
     },
-    "scheme": "noit",
+    "scheme": "stoppy",
     "platforms": [
       "ios",
       "android",
@@ -18,20 +18,20 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#140d2e"
+      "backgroundColor": "#0F2218"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "android": {
-      "package": "com.noit.app",
+      "package": "com.stoppy.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#5C3E9C"
+        "backgroundColor": "#0F2218"
       }
     },
     "ios": {
-      "bundleIdentifier": "com.noit.app",
+      "bundleIdentifier": "com.stoppy.app",
       "supportsTablet": false
     },
     "plugins": [
@@ -42,6 +42,13 @@
           "iosUrlScheme": "com.googleusercontent.apps.PLACEHOLDER"
         }
       ]
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/f6803869-91b0-4a05-ad3c-a42939c6852a"
+    }
   }
 }

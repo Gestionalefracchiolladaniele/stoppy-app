@@ -4,9 +4,13 @@ export type SubscriptionStatus = 'free' | 'plus' | 'pro';
 
 export type Mood = 1 | 2 | 3 | 4 | 5;
 
+/** Urge intensity for a NoFap session: 1 = barely there, 5 = overwhelming.
+ *  Lower-after-than-before means relief, so deltas are computed `before − after`. */
+export type Intensity = 1 | 2 | 3 | 4 | 5;
+
 export type CravingMode = 'feed' | 'breathe';
 
-export type NoitState =
+export type StoppyState =
   | 'idle'
   | 'listening'
   | 'thinking'
@@ -16,6 +20,21 @@ export type NoitState =
   | 'wink'
   | 'curious'
   | 'eyes_closed';
+
+/** @deprecated Legacy alias — Noit (axolotl) became Stoppy (panda). */
+export type NoitState = StoppyState;
+
+/** What set off the urge. Replaces Noit's free-text `food`. */
+export type Trigger =
+  | 'phone'
+  | 'night'
+  | 'stress'
+  | 'boredom'
+  | 'loneliness'
+  | 'tiredness'
+  | 'social'
+  | 'habit'
+  | 'other';
 
 export type CravingTime = 'morning' | 'afternoon' | 'evening';
 
@@ -50,11 +69,13 @@ export interface User {
   disclaimer_accepted?: boolean;
   push_token?: string | null;
   reminder_presets?: { morning?: string; afternoon?: string; evening?: string } | null;
+  /** Last relapse date (YYYY-MM-DD). Drives the clean-streak hero. */
+  last_relapse_date?: string | null;
 }
 
 export interface Message {
   id: string;
-  role: 'user' | 'noit';
+  role: 'user' | 'stoppy';
   text: string;
   timestamp: number;
 }
@@ -62,19 +83,23 @@ export interface Message {
 export interface Session {
   id: string;
   user_id: string;
-  food: string;
+  /** What set off the urge (was Noit's `food`). */
+  trigger: string;
   mode: CravingMode;
   duration: number; // in seconds
+  /** Urge intensity 1-5 before/after the session (was Noit's mood). Lower-after = relief. */
   mood_before: Mood;
   mood_after: Mood;
   recap_text: string;
   messages: Message[];
+  /** Per-session metadata (jsonb), e.g. { balanceRounds }. */
+  context?: Record<string, unknown>;
   created_at: string;
 }
 
 export interface PriorSessionSummary {
   date: string; // YYYY-MM-DD
-  food: string;
+  trigger: string;
   duration: number;
   mood_before: Mood;
   summary: string;

@@ -9,7 +9,7 @@ import 'tsx/cjs';
 import Env from './env';
 
 const EXPO_ACCOUNT_OWNER = 'praticantisokagakkai';
-const EAS_PROJECT_ID = 'c3a711e8-1d8a-496d-9db3-4a2139c6c322';
+const EAS_PROJECT_ID = 'f6803869-91b0-4a05-ad3c-a42939c6852a';
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.EXPO_PUBLIC_APP_ENV !== 'production',
@@ -33,14 +33,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   description: `${Env.EXPO_PUBLIC_NAME} Mobile App`,
   owner: EXPO_ACCOUNT_OWNER,
   scheme: Env.EXPO_PUBLIC_SCHEME,
-  slug: 'cartomanzia',
+  slug: 'stoppy-app',
   version: Env.EXPO_PUBLIC_VERSION.toString(),
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
+  runtimeVersion: {
+    policy: 'appVersion',
+  },
   updates: {
     fallbackToCacheTimeout: 0,
+    url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
   },
   assetBundlePatterns: ['**/*'],
   ios: {
@@ -56,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#1A1A2E',
+      backgroundColor: '#0F2218',
     },
     package: Env.EXPO_PUBLIC_PACKAGE,
   },
@@ -68,7 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#1A1A2E',
+        backgroundColor: '#0F2218',
         image: './assets/splash.png',
         imageWidth: 150,
       },

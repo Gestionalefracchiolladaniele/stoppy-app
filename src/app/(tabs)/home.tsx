@@ -3,10 +3,10 @@ import React, { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
-import { Noit } from '@/components/Noit';
-import { PurpleBg } from '@/components/PurpleBg';
+import { Stoppy as Noit } from '@/components/Stoppy';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { TabBar } from '@/components/TabBar';
-import { TodayMoodDisplay } from '@/components/TodayMoodDisplay';
+import { TodayIntensityDisplay } from '@/components/TodayIntensityDisplay';
 import { useAuthStore } from '@/lib/auth-store';
 import { formatDuration } from '@/lib/format';
 import {
@@ -100,7 +100,7 @@ export default function HomeScreen() {
                 {todaySession ? 'Session done ✓' : 'Ready for your\ndaily session?'}
               </Text>
               <Text style={styles.ciSub}>
-                {todaySession ? 'Tap to start another' : '~10 min · Noit is waiting'}
+                {todaySession ? 'Tap to start another' : '~10 min · Stoppy is here'}
               </Text>
               <View style={styles.ciBtn}>
                 <Text style={styles.ciBtnText}>
@@ -114,7 +114,7 @@ export default function HomeScreen() {
 
         {/* Last session's mood — read-only display */}
         <PulseCard style={styles.moodCheckinWrap}>
-          <TodayMoodDisplay />
+          <TodayIntensityDisplay />
         </PulseCard>
 
         {/* Streak cards — pulse */}
@@ -125,7 +125,7 @@ export default function HomeScreen() {
             <Text style={styles.sl}>Day streak</Text>
           </PulseCard>
           <PulseCard style={styles.streakCard}>
-            <Text style={[styles.sv, { color: '#5C3E9C' }]}>{totalSessions}</Text>
+            <Text style={[styles.sv, { color: '#1A8044' }]}>{totalSessions}</Text>
             <Text style={styles.sl}>Sessions total</Text>
           </PulseCard>
           <PulseCard style={styles.streakCard}>
@@ -144,11 +144,11 @@ export default function HomeScreen() {
               return (
                 <View key={d} style={styles.wd}>
                   {h === 0 ? (
-                    <View style={[styles.wb, { height: 20, backgroundColor: 'rgba(92,62,156,0.22)' }]} />
+                    <View style={[styles.wb, { height: 20, backgroundColor: 'rgba(31,107,77,0.22)' }]} />
                   ) : (
-                    <View style={[styles.wb, { height: Math.max(h, 10), backgroundColor: '#5C3E9C' }]} />
+                    <View style={[styles.wb, { height: Math.max(h, 10), backgroundColor: '#1A8044' }]} />
                   )}
-                  <Text style={[styles.wl, isNow && { color: '#5C3E9C', fontWeight: '700' }]}>{d}</Text>
+                  <Text style={[styles.wl, isNow && { color: '#1A8044', fontWeight: '700' }]}>{d}</Text>
                 </View>
               );
             })}
@@ -170,7 +170,7 @@ export default function HomeScreen() {
                   <Text style={styles.mdL}>{lbl}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.mt}>{s.food || (s.mode === 'breathe' ? 'Breathing session' : 'Talked with Noit')}</Text>
+                  <Text style={styles.mt}>{s.trigger || (s.mode === 'breathe' ? 'Breathing session' : 'Talked with Stoppy')}</Text>
                   <Text style={styles.mn} numberOfLines={2}>
                     {s.recap_text || `${formatDuration(s.duration)} · ${s.mode}`}
                   </Text>
@@ -183,7 +183,7 @@ export default function HomeScreen() {
           })}
           {recent.length === 0 && (
             <Text style={styles.emptyText}>
-              No sessions yet — tap "Start session" to begin your journey with Noit 🌊
+              No sessions yet — tap "Start session" to begin your journey with Stoppy 🌿
             </Text>
           )}
         </PulseCard>
@@ -212,7 +212,7 @@ function computeWeekHeights(sessions: Session[]): number[] {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' },
+  screen: { flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' },
   scroll: { flex: 1 },
   header: { paddingHorizontal: 22, paddingTop: 60, paddingBottom: 14 },
   dateStr: { fontSize: 13, fontWeight: '500', color: 'rgba(255,255,255,0.52)' },
@@ -232,16 +232,16 @@ const styles = StyleSheet.create({
   },
   ciLeft: { flex: 1 },
   ciTag: {
-    backgroundColor: 'rgba(123,91,169,0.1)', borderRadius: 10,
+    backgroundColor: 'rgba(56,201,122,0.1)', borderRadius: 10,
     paddingVertical: 3, paddingHorizontal: 10, alignSelf: 'flex-start',
   },
-  ciTagText: { fontSize: 11, fontWeight: '600', color: '#7B5BA9', letterSpacing: 1, textTransform: 'uppercase' },
-  ciTitle: { fontSize: 20, fontWeight: '700', color: '#2B1A52', marginTop: 8, lineHeight: 24 },
-  ciSub: { fontSize: 13, color: 'rgba(43,26,82,0.52)', marginTop: 4 },
+  ciTagText: { fontSize: 11, fontWeight: '600', color: '#38C97A', letterSpacing: 1, textTransform: 'uppercase' },
+  ciTitle: { fontSize: 20, fontWeight: '700', color: '#0F2218', marginTop: 8, lineHeight: 24 },
+  ciSub: { fontSize: 13, color: 'rgba(15,34,24,0.52)', marginTop: 4 },
   ciBtn: {
-    backgroundColor: '#7B5BA9', borderRadius: 14,
+    backgroundColor: '#38C97A', borderRadius: 14,
     paddingVertical: 10, paddingHorizontal: 16, marginTop: 14, alignSelf: 'flex-start',
-    shadowColor: '#7B5BA9', shadowOffset: { width: 0, height: 6 },
+    shadowColor: '#38C97A', shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35, shadowRadius: 20, elevation: 6,
   },
   ciBtnText: { color: 'white', fontSize: 14, fontWeight: '700' },
@@ -251,14 +251,14 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.6)',
     borderRadius: 20, paddingVertical: 16, paddingHorizontal: 14, gap: 4,
   },
-  sv: { fontSize: 28, fontWeight: '700', color: '#2B1A52', lineHeight: 30 },
-  sl: { fontSize: 12, color: 'rgba(43,26,82,0.52)', fontWeight: '500' },
+  sv: { fontSize: 28, fontWeight: '700', color: '#0F2218', lineHeight: 30 },
+  sl: { fontSize: 12, color: 'rgba(15,34,24,0.52)', fontWeight: '500' },
   moodCheckinWrap: { marginHorizontal: 18, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255,255,255,0.6)' },
   weekCard: { marginHorizontal: 18, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 20, paddingVertical: 14, paddingHorizontal: 14 },
   weekRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
   wd: { flex: 1, alignItems: 'center', gap: 5 },
   wb: { width: '100%', borderRadius: 5 },
-  wl: { fontSize: 10, fontWeight: '600', color: 'rgba(43,26,82,0.4)' },
+  wl: { fontSize: 10, fontWeight: '600', color: 'rgba(15,34,24,0.4)' },
   moodList: { paddingHorizontal: 18, gap: 9 },
   recentCard: {
     marginHorizontal: 18,
@@ -273,19 +273,19 @@ const styles = StyleSheet.create({
   },
   moodItemBorder: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(43,26,82,0.06)',
+    borderTopColor: 'rgba(15,34,24,0.06)',
   },
   md: {
     width: 38, height: 38, borderRadius: 12,
-    backgroundColor: 'rgba(92,62,156,0.1)',
+    backgroundColor: 'rgba(31,107,77,0.1)',
     alignItems: 'center', justifyContent: 'center',
   },
-  mdN: { fontSize: 15, fontWeight: '700', color: '#5C3E9C', lineHeight: 16 },
-  mdL: { fontSize: 9, fontWeight: '600', color: 'rgba(92,62,156,0.6)', textTransform: 'uppercase' },
-  mt: { fontSize: 14, fontWeight: '600', color: '#2B1A52' },
-  mn: { fontSize: 12, color: 'rgba(43,26,82,0.52)', marginTop: 2, lineHeight: 16 },
+  mdN: { fontSize: 15, fontWeight: '700', color: '#1A8044', lineHeight: 16 },
+  mdL: { fontSize: 9, fontWeight: '600', color: 'rgba(31,107,77,0.6)', textTransform: 'uppercase' },
+  mt: { fontSize: 14, fontWeight: '600', color: '#0F2218' },
+  mn: { fontSize: 12, color: 'rgba(15,34,24,0.52)', marginTop: 2, lineHeight: 16 },
   chip: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 10 },
   chipText: { fontSize: 11, fontWeight: '600' },
   emptyCard: { backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 18, padding: 22, alignItems: 'center' },
-  emptyText: { color: 'rgba(43,26,82,0.6)', fontSize: 13.5, textAlign: 'center', lineHeight: 20 },
+  emptyText: { color: 'rgba(15,34,24,0.6)', fontSize: 13.5, textAlign: 'center', lineHeight: 20 },
 });

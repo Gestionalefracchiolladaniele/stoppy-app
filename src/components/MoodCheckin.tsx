@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 
-import { NoitMini, noitVariantForMood } from '@/components/NoitMini';
+import { StoppyMini as NoitMini, stoppyVariantForMood as noitVariantForMood } from '@/components/StoppyMini';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchTodayMood, upsertDailyMood } from '@/lib/supabase-sessions';
 import { useSyncPulse } from '@/lib/use-pulse';
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#2B1A52',
+    color: '#0F2218',
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
@@ -117,19 +117,19 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 16,
-    backgroundColor: 'rgba(92,62,156,0.06)',
+    backgroundColor: 'rgba(31,107,77,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emojiBtnSel: {
-    backgroundColor: 'rgba(123,91,169,0.18)',
+    backgroundColor: 'rgba(56,201,122,0.18)',
     borderWidth: 1.5,
-    borderColor: '#7B5BA9',
+    borderColor: '#38C97A',
   },
   emoji: { fontSize: 26 },
   savedLabel: {
     fontSize: 12,
-    color: '#7B5BA9',
+    color: '#38C97A',
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 10,

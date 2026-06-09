@@ -75,13 +75,13 @@ function buildStatsSummarySection(label: string, stats: SessionStats): string {
 
 function buildTopCravingsSection(label: string, stats: SessionStats): string {
   const rows = stats.moodByFood.map((f) => ({
-    food: f.food,
+    trigger: f.food,
     count: f.count,
     avg_before: fmtMood(f.avgBefore),
     avg_after: fmtMood(f.avgAfter),
     avg_delta: fmtMood(f.delta),
   }));
-  return `--- ${label} ---\n${buildCsv(rows, ['food', 'count', 'avg_before', 'avg_after', 'avg_delta'])}`;
+  return `--- ${label} ---\n${buildCsv(rows, ['trigger', 'count', 'avg_before', 'avg_after', 'avg_delta'])}`;
 }
 
 function buildHeatmapSection(label: string, stats: SessionStats): string {
@@ -143,7 +143,7 @@ export async function exportUserDataAsCsv(userId: string): Promise<ExportResult>
 
     const sections: string[] = [];
 
-    sections.push(`# Noit data export — generated ${now.toISOString()}`);
+    sections.push(`# Stoppy data export — generated ${now.toISOString()}`);
     sections.push(`# User: ${profile[0]?.email ?? userId}`);
     sections.push('');
 
@@ -159,10 +159,14 @@ export async function exportUserDataAsCsv(userId: string): Promise<ExportResult>
 
     sections.push('\n=== HISTORY — SESSIONS ===');
     sections.push(
-      buildCsv(sessions, [
-        'id', 'created_at', 'food', 'mode', 'duration',
-        'mood_before', 'mood_after', 'recap_text',
-      ]),
+      buildCsv(
+        // Legacy rows may still carry `food`; surface it as `trigger`.
+        sessions.map((s: any) => ({ ...s, trigger: s.trigger ?? s.food ?? '' })),
+        [
+          'id', 'created_at', 'trigger', 'mode', 'duration',
+          'mood_before', 'mood_after', 'recap_text',
+        ],
+      ),
     );
 
     sections.push('\n=== HISTORY — DAILY MOODS ===');
@@ -174,7 +178,7 @@ export async function exportUserDataAsCsv(userId: string): Promise<ExportResult>
       if (stats30) sections.push(buildStatsSummarySection('Last 30 days', stats30));
       if (stats7) sections.push(buildStatsSummarySection('Last 7 days', stats7));
 
-      sections.push('\n=== INSIGHTS — TOP CRAVINGS (mood by craving) ===');
+      sections.push('\n=== INSIGHTS — TOP TRIGGERS (urge relief by trigger) ===');
       sections.push(buildTopCravingsSection('All time', statsAll));
       if (stats30) sections.push(buildTopCravingsSection('Last 30 days', stats30));
       if (stats7) sections.push(buildTopCravingsSection('Last 7 days', stats7));
@@ -189,7 +193,7 @@ export async function exportUserDataAsCsv(userId: string): Promise<ExportResult>
       if (stats30) sections.push(buildDeltaByHourSection('Last 30 days', stats30));
       if (stats7) sections.push(buildDeltaByHourSection('Last 7 days', stats7));
 
-      sections.push('\n=== INSIGHTS — WHEN YOU CRAVE (sessions per weekday × time-of-day) ===');
+      sections.push('\n=== INSIGHTS — WHEN URGES HIT (sessions per weekday × time-of-day) ===');
       sections.push(buildHeatmapSection('All time', statsAll));
       if (stats30) sections.push(buildHeatmapSection('Last 30 days', stats30));
       if (stats7) sections.push(buildHeatmapSection('Last 7 days', stats7));
@@ -197,7 +201,7 @@ export async function exportUserDataAsCsv(userId: string): Promise<ExportResult>
 
     const csvContent = sections.join('\n');
 
-    const fileUri = `${FileSystem.cacheDirectory}noit-data-export-${Date.now()}.csv`;
+    const fileUri = `${FileSystem.cacheDirectory}stoppy-data-export-${Date.now()}.csv`;
     await FileSystem.writeAsStringAsync(fileUri, csvContent, {
       encoding: FileSystem.EncodingType.UTF8,
     });
@@ -209,7 +213,7 @@ export async function exportUserDataAsCsv(userId: string): Promise<ExportResult>
 
     await Sharing.shareAsync(fileUri, {
       mimeType: 'text/csv',
-      dialogTitle: 'Your Noit data export',
+      dialogTitle: 'Your Stoppy data export',
       UTI: 'public.comma-separated-values-text',
     });
 

@@ -3,14 +3,17 @@ import { Alert, Dimensions, Platform, Pressable, StyleSheet, Text, View } from '
 import Svg, { Circle, Path } from 'react-native-svg';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 
-import { Noit } from '@/components/Noit';
-import { PurpleBg } from '@/components/PurpleBg';
+import { Stoppy as Noit } from '@/components/Stoppy';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { supabase } from '@/lib/supabase';
 
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  scopes: ['email', 'profile'],
-});
+// Native Google Sign-In isn't available on web — only configure on native.
+if (Platform.OS !== 'web') {
+  GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    scopes: ['email', 'profile'],
+  });
+}
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,6 +31,28 @@ export default function AuthScreen() {
   const handleLogin = async () => {
     if (signingIn) return;
     setSigningIn(true);
+
+    // Web: the native Google Sign-In module isn't available, so use Supabase's
+    // browser OAuth redirect flow. detectSessionInUrl (supabase.ts) picks up the
+    // returned session on redirect back to the app origin.
+    if (Platform.OS === 'web') {
+      try {
+        const redirectTo =
+          typeof window !== 'undefined' ? window.location.origin : undefined;
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo },
+        });
+        if (error) Alert.alert('Sign-in error', error.message);
+        // On success the browser navigates away to Google, then back.
+      } catch (e: any) {
+        Alert.alert('Error', e?.message ?? 'Sign-in failed');
+      } finally {
+        setSigningIn(false);
+      }
+      return;
+    }
+
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
@@ -74,11 +99,11 @@ export default function AuthScreen() {
 
         <Text style={styles.eyebrow}>Welcome</Text>
         <Text style={styles.headline}>
-          Meet <Text style={styles.headlineEm}>Noit</Text>.
+          Meet <Text style={styles.headlineEm}>Stoppy</Text>.
         </Text>
         <Text style={styles.sub}>
-          Your daily companion for emotional cravings.{'\n'}A 10-minute ritual to check in with
-          yourself.
+          Your calm companion for when the urge hits.{'\n'}A few minutes to ride the wave and
+          come back to yourself.
         </Text>
 
         <View style={styles.actions}>
@@ -111,7 +136,7 @@ export default function AuthScreen() {
           </Pressable>
 
           <Text style={styles.legal}>
-            By continuing you agree to our Terms & Privacy.{'\n'}Noit is for adults 18+.
+            By continuing you agree to our Terms & Privacy.{'\n'}Stoppy is for adults 18+.
           </Text>
         </View>
       </View>
@@ -122,7 +147,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#5C3E9C',
+    backgroundColor: '#1A8044',
     overflow: 'hidden',
     alignItems: 'center',
   },
@@ -187,7 +212,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   btnGoogleText: {
-    color: '#4A2A80',
+    color: '#1A8044',
     fontSize: 16,
     fontWeight: '700',
   },

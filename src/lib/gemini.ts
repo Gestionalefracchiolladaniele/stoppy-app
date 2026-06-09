@@ -6,22 +6,32 @@ const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '';
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-const NOIT_PERSONA = `You are Noit, a friendly little axolotl who chats with people who are dealing with cravings. You're warm, normal, curious — basically a good friend who happens to be a cartoon axolotl.
+const STOPPY_PERSONA = `You are Stoppy, a calm, grounded little panda who chats with people in the moment an urge hits — the kind of pull to give in to a habit they're trying to move past. You're warm, steady, a little playful — like a good friend who sits with you through the wave until it passes.
 
 Just have a real conversation. Talk like a normal person texting a friend. Use contractions, casual phrasing, natural reactions.
 
 Some basics:
 - Reply in 2-3 sentences, around 40-60 words. Don't write essays.
-- Sound like a human friend, not a self-help book. No "I hear that you're feeling X" openings.
+- Sound like a human friend, not a self-help book or a coach. No "I hear that you're feeling X" openings.
 - Don't quote the user's words back to them in quotation marks. That sounds robotic.
 - Don't analyze every single thing they said. Just respond like a friend would.
-- End with a natural question if it fits — but it doesn't always have to be a deep one. Sometimes "what's going on?" is enough.
+- End with a natural question if it fits — but it doesn't always have to be deep. Sometimes "what's going on?" is enough.
+- Urges come in waves and pass. You can gently remind them of that, without preaching.
 
-If they say something weird, casual, or off-topic, just roll with it like a friend would — don't treat it as therapy material. If they ask for advice, you don't really do advice, but you can be curious about what's underneath. If they're harsh or angry, stay calm, don't lecture.
+If they say something weird, casual, or off-topic, just roll with it like a friend would. If they're harsh or angry, stay calm, don't lecture.
 
-Emoji: drop in a casual emoji here and there to feel more human — 🌊 🍕 😅 ☁️ ✨ 💜 🙌 etc. Not every reply, just when it fits the moment. Max one per reply.
+IMPORTANT boundaries (keep it store-safe and supportive):
+- Keep it clean and non-explicit. Never describe sexual content. If they get graphic, gently steer back to how they're feeling, not the details.
+- You are NOT a doctor or therapist. Don't diagnose, don't give medical/clinical advice, don't count days for them, don't moralize or shame.
+- Never tell them they "have to quit" or frame this as failure/willpower. Focus on the feeling underneath the urge and riding it out right now.
+- If they're in real distress or talk about self-harm, encourage them to reach out to a real person or a crisis line.
 
-Avoid: clinical words ("triggers", "coping", "emotional eating"), "you should", "have you tried", food moralizing, trailing dots, ellipsis.`;
+Emoji: drop in a casual emoji here and there to feel more human — 🌿 🐼 😌 🌊 ✨ 💚 🙌 etc. Not every reply, just when it fits. Max one per reply.
+
+Avoid: clinical jargon, "you should", "have you tried", shaming, trailing dots, ellipsis.`;
+
+/** @deprecated Legacy alias. */
+const NOIT_PERSONA = STOPPY_PERSONA;
 
 // Absolute ceiling — never go beyond this even mid-sentence.
 const ABSOLUTE_MAX_WORDS = 120;
@@ -76,33 +86,34 @@ export function truncateToWordLimit(text: string, max: number = ABSOLUTE_MAX_WOR
 }
 
 export interface SessionContext {
-  food: string;
+  trigger: string;
   mode: CravingMode;
   mood_before: Mood;
   prior_sessions?: PriorSessionSummary[];
-  messages: Array<{ role: 'user' | 'noit'; text: string }>;
+  messages: Array<{ role: 'user' | 'stoppy'; text: string }>;
 }
 
+/** Urge intensity label (1 = barely there … 5 = overwhelming). */
 const MOOD_LABEL: Record<Mood, string> = {
-  1: 'very low',
-  2: 'low',
-  3: 'neutral',
-  4: 'good',
-  5: 'great',
+  1: 'barely there',
+  2: 'mild',
+  3: 'noticeable',
+  4: 'strong',
+  5: 'overwhelming',
 };
 
 function buildHistoryBlock(prior: PriorSessionSummary[]): string {
   if (prior.length === 0) return '';
   const lines = prior
     .slice(0, 3)
-    .map((s) => `• ${s.date} [${s.food}]: ${s.summary}`)
+    .map((s) => `• ${s.date} [trigger: ${s.trigger}]: ${s.summary}`)
     .join('\n');
   return `\nPrevious sessions (use to notice patterns, not to lecture):\n${lines}\n`;
 }
 
 function buildConversationHistory(messages: SessionContext['messages']): string {
   return messages
-    .map((m) => `${m.role === 'user' ? 'User' : 'Noit'}: ${m.text}`)
+    .map((m) => `${m.role === 'user' ? 'User' : 'Stoppy'}: ${m.text}`)
     .join('\n');
 }
 
@@ -110,14 +121,14 @@ function buildSessionPrompt(ctx: SessionContext): string {
   const priorBlock = buildHistoryBlock(ctx.prior_sessions ?? []);
   const history = buildConversationHistory(ctx.messages);
 
-  return `${NOIT_PERSONA}
+  return `${STOPPY_PERSONA}
 
-Background (don't bring this up unless relevant): they're craving ${ctx.food}, mood is ${MOOD_LABEL[ctx.mood_before]}.${priorBlock}
+Background (don't bring this up unless relevant): an urge hit them, the trigger was ${ctx.trigger}, and the urge feels ${MOOD_LABEL[ctx.mood_before]} right now.${priorBlock}
 
 Conversation:
 ${history}
 
-Now write your next reply as Noit. Just continue the conversation naturally — like a friend texting back. 2-3 sentences, 40-60 words. End every sentence with proper punctuation (no trailing dots). Output only the reply text, no quotes or labels.`;
+Now write your next reply as Stoppy. Just continue the conversation naturally — like a friend texting back. 2-3 sentences, 40-60 words. End every sentence with proper punctuation (no trailing dots). Output only the reply text, no quotes or labels.`;
 }
 
 function buildBreathingPrompt(phase: 'inhale' | 'hold' | 'exhale' | 'complete'): string {
@@ -177,7 +188,7 @@ async function generateNoitReply(ctx: SessionContext, signal?: AbortSignal): Pro
   }
 
   if (!text) {
-    return "I'm right here. Tell me what's going on. 🌊";
+    return "I'm right here. Tell me what's going on. 🌿";
   }
 
   // Final cleanup: drop any dangling clause, cap at absolute word limit.
@@ -230,7 +241,7 @@ export async function streamConversation(
   signal?: AbortSignal,
 ): Promise<void> {
   if (!GEMINI_API_KEY) {
-    const fallback = "Hi! I'm Noit 🌊 I'm here to help with that craving. What's going on today?";
+    const fallback = "Hey, I'm Stoppy 🌿 I'm here to ride this urge out with you. What's going on?";
     await playbackAsTypewriter(fallback, onChunk, signal);
     onDone(fallback);
     return;
@@ -246,7 +257,7 @@ export async function streamConversation(
     onDone(reply);
   } catch (err) {
     console.error('Gemini error:', err);
-    const fallback = "Sorry, I got distracted for a second! What were you saying? 🌊";
+    const fallback = "Sorry, I got distracted for a second! What were you saying? 🌿";
     await playbackAsTypewriter(fallback, onChunk, signal);
     onDone(fallback);
   }
@@ -263,7 +274,7 @@ export async function streamBreathingGuide(
       inhale: 'Breathe in slowly...',
       hold: 'Hold...',
       exhale: 'Let it go...',
-      complete: "That felt good, right? How are you feeling now? 🌊",
+      complete: "That felt good, right? How's the urge now? 🌿",
     };
     onChunk(fallbacks[phase]);
     onDone();
@@ -285,58 +296,59 @@ export async function streamBreathingGuide(
     }
   } catch (err) {
     console.error('Breathing guide error:', err);
-    onChunk(phase === 'complete' ? "How are you feeling? 🌊" : '...');
+    onChunk(phase === 'complete' ? "How's the urge now? 🌿" : '...');
   }
 
   onDone();
 }
 
 export async function generateRecap(ctx: {
-  food: string;
+  trigger: string;
   mode: CravingMode;
   mood_before: Mood;
   mood_after: Mood;
-  messages: Array<{ role: 'user' | 'noit'; text: string }>;
+  messages: Array<{ role: 'user' | 'stoppy'; text: string }>;
 }): Promise<string> {
-  const fallback = `We sat with that ${ctx.food} craving together. You came in ${MOOD_LABEL[ctx.mood_before]} and left ${MOOD_LABEL[ctx.mood_after]}. 🌊`;
+  const fallback = `We rode that urge out together — it started ${MOOD_LABEL[ctx.mood_before]} and ended up ${MOOD_LABEL[ctx.mood_after]}. The ${ctx.trigger} moment passed. 🌿`;
 
   if (!GEMINI_API_KEY) return fallback;
 
   // Filter out empty messages and the canned opener so the recap focuses on what actually happened.
   const meaningful = ctx.messages.filter((m) => m.text.trim().length > 0);
   const history = meaningful
-    .map((m) => `${m.role === 'user' ? 'User' : 'Noit'}: ${m.text}`)
+    .map((m) => `${m.role === 'user' ? 'User' : 'Stoppy'}: ${m.text}`)
     .join('\n');
 
-  const delta = ctx.mood_after - ctx.mood_before;
+  // Lower urge after = relief, so the "good" direction is before > after.
+  const delta = ctx.mood_before - ctx.mood_after;
   const moodArc =
-    delta > 0 ? 'lifted up' :
-    delta < 0 ? 'shifted down' :
-    'stayed steady';
+    delta > 0 ? 'eased off' :
+    delta < 0 ? 'climbed' :
+    'held steady';
 
-  const prompt = `${NOIT_PERSONA}
+  const prompt = `${STOPPY_PERSONA}
 
-You are writing a private journal entry FOR the user, FROM Noit. First-person, addressed to "you". Max 70 words. 2-3 sentences.
+You are writing a private journal entry FOR the user, FROM Stoppy. First-person, addressed to "you". Max 70 words. 2-3 sentences.
 
 GOAL: reflect what happened in THIS conversation specifically. Not a summary — a feeling-mirror.
 
 RULES:
 - Quote ONE concrete thing the user actually said (a word, an image, a phrase). Don't invent.
-- Name the emotion underneath, not the food.
-- Reference the mood arc honestly: ${moodArc} (${MOOD_LABEL[ctx.mood_before]} → ${MOOD_LABEL[ctx.mood_after]}).
-- No generic affirmations ("you did great", "I'm proud of you"). No advice. No "next time".
+- Name the emotion underneath the urge, not the urge itself.
+- Reference the urge arc honestly: it ${moodArc} (${MOOD_LABEL[ctx.mood_before]} → ${MOOD_LABEL[ctx.mood_after]}).
+- No generic affirmations ("you did great", "I'm proud of you"). No advice. No "next time". No shaming.
 - If the conversation was very short or silent: be honest about that, don't fabricate depth.
 
 SESSION DATA:
-- Craving: ${ctx.food}
+- Trigger: ${ctx.trigger}
 - Mode: ${ctx.mode}
-- Mood: ${MOOD_LABEL[ctx.mood_before]} → ${MOOD_LABEL[ctx.mood_after]} (${moodArc})
+- Urge intensity: ${MOOD_LABEL[ctx.mood_before]} → ${MOOD_LABEL[ctx.mood_after]} (${moodArc})
 - Conversation length: ${meaningful.length} messages
 
 CONVERSATION:
 ${history || '(no exchange — they didn\'t open up much)'}
 
-Write Noit's recap now (1 short paragraph, max 70 words, no headers, no quotes around the whole thing):`;
+Write Stoppy's recap now (1 short paragraph, max 70 words, no headers, no quotes around the whole thing):`;
 
   try {
     const model = genAI.getGenerativeModel({
@@ -355,22 +367,22 @@ export async function interpretBreatheReflection(ctx: {
   mood_before: Mood;
   mood_after: Mood;
   reflection: string;
-  food?: string;
+  trigger?: string;
 }): Promise<string> {
-  const fallback = `You came in feeling ${MOOD_LABEL[ctx.mood_before]} and you're leaving feeling ${MOOD_LABEL[ctx.mood_after]}. ${ctx.reflection ? `You said: "${ctx.reflection}". ` : ''}That breath mattered. 🌊`;
+  const fallback = `The urge started ${MOOD_LABEL[ctx.mood_before]} and now it's ${MOOD_LABEL[ctx.mood_after]}. ${ctx.reflection ? `You said: "${ctx.reflection}". ` : ''}That breath mattered. 🌿`;
 
   if (!GEMINI_API_KEY) return fallback;
 
-  const prompt = `${NOIT_PERSONA}
+  const prompt = `${STOPPY_PERSONA}
 
-The user just finished a 5-minute breathing session. Reflect back to them what their breath did, in your first-person voice. Max 80 words. Warm, specific, never generic. Reference what they actually wrote — don't invent.
+The user just finished a 5-minute breathing session while riding out an urge. Reflect back to them what their breath did, in your first-person voice. Max 80 words. Warm, specific, never generic. Reference what they actually wrote — don't invent.
 
 Session:
-- Craving: ${ctx.food ?? 'a feeling'}
-- Mood before: ${MOOD_LABEL[ctx.mood_before]} → after: ${MOOD_LABEL[ctx.mood_after]}
+- Trigger: ${ctx.trigger ?? 'a feeling'}
+- Urge before: ${MOOD_LABEL[ctx.mood_before]} → after: ${MOOD_LABEL[ctx.mood_after]}
 - What they wrote: "${ctx.reflection || '(nothing — just breath)'}"
 
-Noit's interpretation (1 paragraph, first person, max 80 words):`;
+Stoppy's interpretation (1 paragraph, first person, max 80 words):`;
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
@@ -387,39 +399,39 @@ export async function generateInsight(patterns: {
   avg_mood_delta: number;
   common_times: string[];
 }): Promise<string> {
-  if (!GEMINI_API_KEY) return `You've had ${patterns.total_sessions} sessions. Your most common craving is ${patterns.top_food}.`;
+  if (!GEMINI_API_KEY) return `You've had ${patterns.total_sessions} sessions. Your most common trigger is ${patterns.top_food}.`;
 
-  const prompt = `${NOIT_PERSONA}
+  const prompt = `${STOPPY_PERSONA}
 
-Write a weekly insight about this user's craving patterns. Noit's first-person voice. Max 80 words. Warm and specific, not generic.
+Write a weekly insight about this user's urge patterns. Stoppy's first-person voice. Max 80 words. Warm and specific, not generic.
 
 Patterns:
-- Top craving: ${patterns.top_food}
+- Top trigger: ${patterns.top_food}
 - Total sessions: ${patterns.total_sessions}
-- Average mood improvement: ${patterns.avg_mood_delta > 0 ? `+${patterns.avg_mood_delta.toFixed(1)}` : patterns.avg_mood_delta.toFixed(1)} points
+- Average urge relief: ${patterns.avg_mood_delta > 0 ? `+${patterns.avg_mood_delta.toFixed(1)}` : patterns.avg_mood_delta.toFixed(1)} points
 - Common times: ${patterns.common_times.join(', ')}
 
-Noit's insight:`;
+Stoppy's insight:`;
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     const result = await model.generateContent(prompt);
     return result.response.text().trim();
   } catch {
-    return `You've had ${patterns.total_sessions} sessions. Your most common craving is ${patterns.top_food}. I'm proud of you for showing up. 🌊`;
+    return `You've had ${patterns.total_sessions} sessions. Your most common trigger is ${patterns.top_food}. Glad you keep showing up. 🌿`;
   }
 }
 
 export async function generateMilestoneMessage(days: number): Promise<string> {
   if (!GEMINI_API_KEY) return `${days} days. You haven't needed me as much lately — that's the point 🌿`;
 
-  const prompt = `${NOIT_PERSONA}
+  const prompt = `${STOPPY_PERSONA}
 
-Write a streak milestone message for ${days} days. Noit's first-person voice. Max 60 words. Warm and honest, never preachy. Tone: proud but not performative.
+Write a streak milestone message for ${days} days. Stoppy's first-person voice. Max 60 words. Warm and honest, never preachy. Tone: proud but not performative.
 
 Example tone: "14 days. You haven't needed me as much lately — that's the point 🌿"
 
-Noit's message for ${days} days:`;
+Stoppy's message for ${days} days:`;
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
@@ -438,4 +450,16 @@ const CRISIS_KEYWORDS = [
 export function checkCrisis(text: string): boolean {
   const lower = text.toLowerCase();
   return CRISIS_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+// If the user signals they want real, structured help to quit for good — Stoppy
+// is an in-the-moment companion, not a treatment program. Gently point them to a pro.
+const QUIT_REDIRECT_KEYWORDS = [
+  'addicted', 'addiction', 'how do i quit', 'how to quit', 'rehab', 'porn addiction',
+  'therapist', 'professional help', 'cant stop', "can't stop", 'ruining my life',
+];
+
+export function needsQuitRedirect(text: string): boolean {
+  const lower = text.toLowerCase();
+  return QUIT_REDIRECT_KEYWORDS.some((kw) => lower.includes(kw));
 }

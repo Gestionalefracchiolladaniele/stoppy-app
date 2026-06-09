@@ -80,8 +80,8 @@ export async function scheduleDailySessionReminder(timeStr: string): Promise<boo
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: '🌊 Noit is waiting',
-      body: "Ready for today's session? It's just 10 minutes.",
+      title: '🌿 Stoppy is here',
+      body: "Want to check in? Just a few minutes to ground yourself.",
       data: { type: 'session_reminder' },
       sound: true,
     },

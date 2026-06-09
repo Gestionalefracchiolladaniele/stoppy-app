@@ -26,24 +26,24 @@ const EXPO_PUBLIC_APP_ENV = (process.env.EXPO_PUBLIC_APP_ENV
   ?? 'development') as z.infer<typeof envSchema>['EXPO_PUBLIC_APP_ENV'];
 
 const BUNDLE_IDS = {
-  development: 'com.cartomanzia.development',
-  preview: 'com.cartomanzia.preview',
-  production: 'com.cartomanzia',
+  development: 'com.stoppy.app.development',
+  preview: 'com.stoppy.app.preview',
+  production: 'com.stoppy.app',
 } as const;
 
 const PACKAGES = {
-  development: 'com.cartomanzia.development',
-  preview: 'com.cartomanzia.preview',
-  production: 'com.cartomanzia',
+  development: 'com.stoppy.app.development',
+  preview: 'com.stoppy.app.preview',
+  production: 'com.stoppy.app',
 } as const;
 
 const SCHEMES = {
-  development: 'cartomanzia',
-  preview: 'cartomanzia.preview',
-  production: 'cartomanzia',
+  development: 'stoppy',
+  preview: 'stoppy.preview',
+  production: 'stoppy',
 } as const;
 
-const NAME = 'Cartomanzia';
+const NAME = 'Stoppy';
 
 // Check if strict validation is required (before prebuild)
 const STRICT_ENV_VALIDATION = process.env.STRICT_ENV_VALIDATION === '1';

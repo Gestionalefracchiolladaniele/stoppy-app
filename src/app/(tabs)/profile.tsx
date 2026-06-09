@@ -4,9 +4,9 @@ import { Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, Text,
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { Noit } from '@/components/Noit';
+import { Stoppy as Noit } from '@/components/Stoppy';
 import { PaywallModal } from '@/components/PaywallModal';
-import { PurpleBg } from '@/components/PurpleBg';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { TabBar } from '@/components/TabBar';
 import { NotificationCenter } from '@/features/notifications/NotificationCenter';
 import { useNotificationStore } from '@/features/notifications/notification-store';
@@ -26,7 +26,7 @@ import {
 } from '@/lib/session-store';
 import { useSyncPulse } from '@/lib/use-pulse';
 
-const PRIVACY_POLICY_URL = 'https://noit.app/privacy';
+const PRIVACY_POLICY_URL = 'https://stoppy.app/privacy';
 
 const DEFAULT_PRESETS = [
   { id: 'morning', label: '☀️', defaultTime: '09:00' },
@@ -141,7 +141,7 @@ export default function ProfileScreen() {
         if (!token) {
           Alert.alert(
             'Permission needed',
-            'Enable notifications in your device settings to get reminders from Noit.',
+            'Enable notifications in your device settings to get reminders from Stoppy.',
           );
           setSavingNotif(false);
           return;
@@ -303,7 +303,7 @@ export default function ProfileScreen() {
         {/* Stats */}
         <View style={styles.stats}>
           <PulseCard style={styles.statCard}>
-            <Text style={[styles.statVal, { color: '#5C3E9C' }]}>{moodLabelFromAvg(avgMood)}</Text>
+            <Text style={[styles.statVal, { color: '#1A8044' }]}>{moodLabelFromAvg(avgMood)}</Text>
             <Text style={styles.statLbl}>Avg. mood</Text>
           </PulseCard>
           <PulseCard style={styles.statCard}>
@@ -327,9 +327,9 @@ export default function ProfileScreen() {
               value={notificationsEnabled}
               onValueChange={toggleNotifications}
               disabled={savingNotif}
-              trackColor={{ false: 'rgba(43,26,82,0.15)', true: '#7B5BA9' }}
+              trackColor={{ false: 'rgba(15,34,24,0.15)', true: '#38C97A' }}
               thumbColor="white"
-              ios_backgroundColor="rgba(43,26,82,0.15)"
+              ios_backgroundColor="rgba(15,34,24,0.15)"
             />
           </View>
           {notificationsEnabled && (
@@ -349,7 +349,7 @@ export default function ProfileScreen() {
                           value={editDraft}
                           onChangeText={setEditDraft}
                           placeholder="HH:MM"
-                          placeholderTextColor="rgba(43,26,82,0.35)"
+                          placeholderTextColor="rgba(15,34,24,0.35)"
                           keyboardType="numbers-and-punctuation"
                           autoFocus
                           maxLength={5}
@@ -400,7 +400,7 @@ export default function ProfileScreen() {
             <View style={styles.menuIcon}><MenuSvg id="star" /></View>
             <Text style={styles.menuLbl}>Subscription</Text>
             <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
-              <Path d="M6 4l4 4-4 4" stroke="rgba(43,26,82,0.3)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+              <Path d="M6 4l4 4-4 4" stroke="rgba(15,34,24,0.3)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
             </Svg>
           </Pressable>
 
@@ -409,7 +409,7 @@ export default function ProfileScreen() {
             <View style={styles.menuIcon}><MenuSvg id="lock" /></View>
             <Text style={styles.menuLbl}>Privacy & data</Text>
             <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
-              <Path d="M6 4l4 4-4 4" stroke="rgba(43,26,82,0.3)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+              <Path d="M6 4l4 4-4 4" stroke="rgba(15,34,24,0.3)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
             </Svg>
           </Pressable>
 
@@ -418,7 +418,7 @@ export default function ProfileScreen() {
             <View style={styles.menuIcon}><MenuSvg id="info" /></View>
             <Text style={styles.menuLbl}>Help & Support</Text>
             <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
-              <Path d="M6 4l4 4-4 4" stroke="rgba(43,26,82,0.3)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+              <Path d="M6 4l4 4-4 4" stroke="rgba(15,34,24,0.3)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
             </Svg>
           </Pressable>
         </PulseCard>
@@ -451,7 +451,7 @@ function PrivacyModal({
 }) {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' }}>
+      <View style={{ flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' }}>
         <PurpleBg />
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
           <View style={modalStyles.hero}>
@@ -477,14 +477,14 @@ function PrivacyModal({
             <Text style={modalStyles.section}>What we collect</Text>
             <Text style={modalStyles.body}>
               • Your name and email (from Google sign-in){'\n'}
-              • Your session conversations with Noit{'\n'}
-              • Your mood entries and craving patterns{'\n'}
+              • Your session conversations with Stoppy{'\n'}
+              • Your urge entries and trigger patterns{'\n'}
               • Anonymous usage data to improve the app
             </Text>
 
             <Text style={modalStyles.section}>How we use it</Text>
             <Text style={modalStyles.body}>
-              Your data helps Noit personalize sessions and notice patterns over time. We never share it with third parties or use it for ads. Your conversations stay between you and Noit.
+              Your data helps Stoppy personalize sessions and notice patterns over time. We never share it with third parties or use it for ads. Your conversations stay between you and Stoppy.
             </Text>
 
             <Text style={modalStyles.section}>Your rights</Text>
@@ -524,8 +524,8 @@ function PrivacyModal({
 
 const FAQ = [
   {
-    q: 'How does Noit work?',
-    a: 'When a craving hits, you tell Noit what you want. Noit listens, eats the craving, and helps you sit with the feeling instead of acting on it. It\'s not about resisting — it\'s about being heard.',
+    q: 'How does Stoppy work?',
+    a: 'When an urge hits, you tell Stoppy what set it off. Stoppy listens and helps you ride the wave instead of acting on it. It\'s not about willpower — it\'s about not being alone in the moment.',
   },
   {
     q: 'Why did my streak reset?',
@@ -533,22 +533,22 @@ const FAQ = [
   },
   {
     q: 'Is my data private?',
-    a: 'Yes. Conversations stay between you and Noit. We never sell or share your data. See Privacy & data for details.',
+    a: 'Yes. Conversations stay between you and Stoppy. We never sell or share your data. See Privacy & data for details.',
   },
   {
-    q: 'Feed vs Breathe — which should I pick?',
-    a: 'Feed (Talk) is for cravings tied to emotions — when you want to be heard. Breathe is for moments when words feel like too much, just 5 minutes of slow breath.',
+    q: 'Talk vs Breathe — which should I pick?',
+    a: 'Talk is for when you want to be heard through the urge. Breathe is for moments when words feel like too much — just 5 minutes of slow breath to let the wave pass.',
   },
   {
     q: 'How do I contact support?',
-    a: 'Email us at support@noit.app — we read every message.',
+    a: 'Email us at support@stoppy.app — we read every message.',
   },
 ];
 
 function HelpModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' }}>
+      <View style={{ flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' }}>
         <PurpleBg />
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
           <View style={modalStyles.hero}>
@@ -583,7 +583,7 @@ function HelpModal({ visible, onClose }: { visible: boolean; onClose: () => void
             <View style={modalStyles.contactBox}>
               <Text style={modalStyles.contactTitle}>Still need help?</Text>
               <Text style={modalStyles.contactBody}>
-                Email us at <Text style={{ fontWeight: '700', color: '#5C3E9C' }}>support@noit.app</Text> — we usually reply within 24 hours.
+                Email us at <Text style={{ fontWeight: '700', color: '#1A8044' }}>support@stoppy.app</Text> — we usually reply within 24 hours.
               </Text>
             </View>
 
@@ -600,37 +600,37 @@ function HelpModal({ visible, onClose }: { visible: boolean; onClose: () => void
 function MenuSvg({ id }: { id: string }) {
   if (id === 'star') return (
     <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-      <Path d="M9 2l2 5h5l-4 3 1.5 5L9 12l-4.5 3L6 10 2 7h5z" stroke="#5C3E9C" strokeWidth={1.6} strokeLinejoin="round" />
+      <Path d="M9 2l2 5h5l-4 3 1.5 5L9 12l-4.5 3L6 10 2 7h5z" stroke="#1A8044" strokeWidth={1.6} strokeLinejoin="round" />
     </Svg>
   );
   if (id === 'bell') return (
     <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-      <Path d="M9 2a5 5 0 015 5c0 3-1.5 5-5 7C5.5 12 4 10 4 7a5 5 0 015-5z" stroke="#5C3E9C" strokeWidth={1.8} />
-      <Path d="M9 16a1.5 1.5 0 010-3" stroke="#5C3E9C" strokeWidth={1.8} strokeLinecap="round" />
+      <Path d="M9 2a5 5 0 015 5c0 3-1.5 5-5 7C5.5 12 4 10 4 7a5 5 0 015-5z" stroke="#1A8044" strokeWidth={1.8} />
+      <Path d="M9 16a1.5 1.5 0 010-3" stroke="#1A8044" strokeWidth={1.8} strokeLinecap="round" />
     </Svg>
   );
   if (id === 'clock') return (
     <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-      <Circle cx="9" cy="9" r="7" stroke="#5C3E9C" strokeWidth={1.8} />
-      <Path d="M9 6v3l2 2" stroke="#5C3E9C" strokeWidth={1.8} strokeLinecap="round" />
+      <Circle cx="9" cy="9" r="7" stroke="#1A8044" strokeWidth={1.8} />
+      <Path d="M9 6v3l2 2" stroke="#1A8044" strokeWidth={1.8} strokeLinecap="round" />
     </Svg>
   );
   if (id === 'lock') return (
     <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-      <Rect x="3" y="3" width="12" height="12" rx="3" stroke="#5C3E9C" strokeWidth={1.8} />
-      <Path d="M6 9h4" stroke="#5C3E9C" strokeWidth={1.8} strokeLinecap="round" />
+      <Rect x="3" y="3" width="12" height="12" rx="3" stroke="#1A8044" strokeWidth={1.8} />
+      <Path d="M6 9h4" stroke="#1A8044" strokeWidth={1.8} strokeLinecap="round" />
     </Svg>
   );
   return (
     <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-      <Circle cx="9" cy="9" r="7" stroke="#5C3E9C" strokeWidth={1.8} />
-      <Path d="M9 8v4M9 6h.01" stroke="#5C3E9C" strokeWidth={1.8} strokeLinecap="round" />
+      <Circle cx="9" cy="9" r="7" stroke="#1A8044" strokeWidth={1.8} />
+      <Path d="M9 8v4M9 6h.01" stroke="#1A8044" strokeWidth={1.8} strokeLinecap="round" />
     </Svg>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' },
+  screen: { flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' },
   scroll: { flex: 1 },
   header: {
     paddingHorizontal: 22, paddingTop: 60, paddingBottom: 16,
@@ -650,16 +650,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#E05C5C',
     alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 4,
-    borderWidth: 1.5, borderColor: '#6A4AAC',
+    borderWidth: 1.5, borderColor: '#1F6B4D',
   },
   bellBadgeText: { color: 'white', fontSize: 10, fontWeight: '700' },
   timeSubItem: {
     paddingHorizontal: 18, paddingTop: 4, paddingBottom: 14,
-    borderTopWidth: 1, borderTopColor: 'rgba(43,26,82,0.06)',
+    borderTopWidth: 1, borderTopColor: 'rgba(15,34,24,0.06)',
     marginTop: -1,
   },
   timeSubLabel: {
-    fontSize: 11, fontWeight: '600', color: 'rgba(43,26,82,0.5)',
+    fontSize: 11, fontWeight: '600', color: 'rgba(15,34,24,0.5)',
     letterSpacing: 1, textTransform: 'uppercase',
     marginBottom: 10, marginTop: 4,
   },
@@ -668,23 +668,23 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     paddingVertical: 10, paddingHorizontal: 6,
-    backgroundColor: 'rgba(123,91,169,0.08)',
-    borderWidth: 1.5, borderColor: 'rgba(123,91,169,0.18)',
+    backgroundColor: 'rgba(56,201,122,0.08)',
+    borderWidth: 1.5, borderColor: 'rgba(56,201,122,0.18)',
     borderRadius: 14, alignItems: 'center',
     overflow: 'hidden',
   },
   timeChipSel: {
-    backgroundColor: 'rgba(123,91,169,0.18)',
-    borderColor: '#7B5BA9',
+    backgroundColor: 'rgba(56,201,122,0.18)',
+    borderColor: '#38C97A',
   },
-  timeChipText: { fontSize: 12, fontWeight: '600', color: 'rgba(43,26,82,0.65)' },
-  timeChipTextSel: { color: '#2B1A52' },
-  timeChipTime: { fontSize: 11, fontWeight: '500', color: 'rgba(43,26,82,0.45)', marginTop: 2 },
-  timeChipTimeSel: { color: '#5C3E9C', fontWeight: '700' },
+  timeChipText: { fontSize: 12, fontWeight: '600', color: 'rgba(15,34,24,0.65)' },
+  timeChipTextSel: { color: '#0F2218' },
+  timeChipTime: { fontSize: 11, fontWeight: '500', color: 'rgba(15,34,24,0.45)', marginTop: 2 },
+  timeChipTimeSel: { color: '#1A8044', fontWeight: '700' },
   timeChipInput: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#5C3E9C',
+    color: '#1A8044',
     paddingVertical: 2,
     paddingHorizontal: 4,
     backgroundColor: 'white',
@@ -694,10 +694,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
     includeFontPadding: false,
   },
-  timeChipCancel: { fontSize: 11, color: 'rgba(43,26,82,0.5)', marginTop: 2 },
+  timeChipCancel: { fontSize: 11, color: 'rgba(15,34,24,0.5)', marginTop: 2 },
   timeHint: {
     fontSize: 10,
-    color: 'rgba(43,26,82,0.4)',
+    color: 'rgba(15,34,24,0.4)',
     marginTop: 8,
     fontStyle: 'italic',
   },
@@ -706,20 +706,20 @@ const styles = StyleSheet.create({
     borderRadius: 26, paddingVertical: 22, paddingHorizontal: 20,
     flexDirection: 'row', alignItems: 'center', gap: 18,
   },
-  streak: { fontSize: 34, fontWeight: '700', color: '#2B1A52', lineHeight: 36 },
-  streakLbl: { fontSize: 13, color: 'rgba(43,26,82,0.55)', marginTop: 2 },
+  streak: { fontSize: 34, fontWeight: '700', color: '#0F2218', lineHeight: 36 },
+  streakLbl: { fontSize: 13, color: 'rgba(15,34,24,0.55)', marginTop: 2 },
   badge: {
-    backgroundColor: 'rgba(92,62,156,0.12)', borderRadius: 12,
+    backgroundColor: 'rgba(31,107,77,0.12)', borderRadius: 12,
     paddingVertical: 5, paddingHorizontal: 12, marginTop: 8, alignSelf: 'flex-start',
   },
-  badgeText: { fontSize: 12, fontWeight: '600', color: '#5C3E9C' },
+  badgeText: { fontSize: 12, fontWeight: '600', color: '#1A8044' },
   stats: { marginTop: 12, marginHorizontal: 18, flexDirection: 'row', gap: 10 },
   statCard: {
     flex: 1, backgroundColor: 'rgba(255,255,255,0.92)',
     borderRadius: 20, paddingVertical: 14, alignItems: 'center', gap: 3,
   },
-  statVal: { fontSize: 22, fontWeight: '700', color: '#2B1A52' },
-  statLbl: { fontSize: 11, color: 'rgba(43,26,82,0.5)', fontWeight: '500', textAlign: 'center' },
+  statVal: { fontSize: 22, fontWeight: '700', color: '#0F2218' },
+  statLbl: { fontSize: 11, color: 'rgba(15,34,24,0.5)', fontWeight: '500', textAlign: 'center' },
   section: {
     paddingHorizontal: 22, paddingTop: 20, paddingBottom: 10,
     fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.42)',
@@ -732,21 +732,21 @@ const styles = StyleSheet.create({
   menuItem: {
     paddingVertical: 16, paddingHorizontal: 18,
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(43,26,82,0.06)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(15,34,24,0.06)',
   },
   menuIcon: {
     width: 36, height: 36, borderRadius: 11,
-    backgroundColor: 'rgba(92,62,156,0.1)',
+    backgroundColor: 'rgba(31,107,77,0.1)',
     alignItems: 'center', justifyContent: 'center',
   },
-  menuLbl: { flex: 1, fontSize: 15, fontWeight: '500', color: '#2B1A52' },
+  menuLbl: { flex: 1, fontSize: 15, fontWeight: '500', color: '#0F2218' },
   signout: {
     marginHorizontal: 18, marginTop: 12,
     backgroundColor: 'rgba(255,255,255,0.6)',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)',
     borderRadius: 20, paddingVertical: 15, alignItems: 'center',
   },
-  signoutText: { fontSize: 15, fontWeight: '600', color: '#5C3E9C' },
+  signoutText: { fontSize: 15, fontWeight: '600', color: '#1A8044' },
 });
 
 const modalStyles = StyleSheet.create({
@@ -798,21 +798,21 @@ const modalStyles = StyleSheet.create({
   cardTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#2B1A52',
+    color: '#0F2218',
     textAlign: 'center',
     lineHeight: 30,
   },
-  cardTitleEm: { color: '#7B5BA9' },
+  cardTitleEm: { color: '#38C97A' },
   cardSub: {
     fontSize: 13.5,
-    color: 'rgba(43,26,82,0.52)',
+    color: 'rgba(15,34,24,0.52)',
     textAlign: 'center',
     marginTop: 6,
   },
   section: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#5C3E9C',
+    color: '#1A8044',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     marginTop: 22,
@@ -820,19 +820,19 @@ const modalStyles = StyleSheet.create({
   },
   body: {
     fontSize: 14,
-    color: 'rgba(43,26,82,0.85)',
+    color: 'rgba(15,34,24,0.85)',
     lineHeight: 22,
   },
   btnGhost: {
     marginTop: 22,
-    backgroundColor: 'rgba(123,91,169,0.1)',
+    backgroundColor: 'rgba(56,201,122,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(123,91,169,0.2)',
+    borderColor: 'rgba(56,201,122,0.2)',
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
   },
-  btnGhostText: { fontSize: 14, fontWeight: '700', color: '#5C3E9C' },
+  btnGhostText: { fontSize: 14, fontWeight: '700', color: '#1A8044' },
   btnDanger: {
     marginTop: 10,
     backgroundColor: 'rgba(224,92,92,0.08)',
@@ -844,14 +844,14 @@ const modalStyles = StyleSheet.create({
   },
   btnDangerText: { fontSize: 14, fontWeight: '700', color: '#B84545' },
   btnLink: { marginTop: 14, paddingVertical: 6, alignItems: 'center' },
-  btnLinkText: { fontSize: 13, fontWeight: '600', color: '#7B5BA9' },
+  btnLinkText: { fontSize: 13, fontWeight: '600', color: '#38C97A' },
   btnCta: {
     marginTop: 22,
     paddingVertical: 18,
-    backgroundColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
     borderRadius: 22,
     alignItems: 'center',
-    shadowColor: '#7B5BA9',
+    shadowColor: '#38C97A',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.4,
     shadowRadius: 30,
@@ -859,23 +859,23 @@ const modalStyles = StyleSheet.create({
   },
   btnCtaText: { color: 'white', fontSize: 16, fontWeight: '700' },
   faqItem: {
-    backgroundColor: 'rgba(123,91,169,0.06)',
+    backgroundColor: 'rgba(56,201,122,0.06)',
     borderWidth: 1,
-    borderColor: 'rgba(123,91,169,0.12)',
+    borderColor: 'rgba(56,201,122,0.12)',
     borderRadius: 16,
     padding: 14,
   },
-  faqQ: { fontSize: 14, fontWeight: '700', color: '#2B1A52' },
-  faqA: { fontSize: 13, color: 'rgba(43,26,82,0.7)', lineHeight: 20, marginTop: 5 },
+  faqQ: { fontSize: 14, fontWeight: '700', color: '#0F2218' },
+  faqA: { fontSize: 13, color: 'rgba(15,34,24,0.7)', lineHeight: 20, marginTop: 5 },
   contactBox: {
-    backgroundColor: 'rgba(123,91,169,0.1)',
+    backgroundColor: 'rgba(56,201,122,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(123,91,169,0.2)',
+    borderColor: 'rgba(56,201,122,0.2)',
     borderRadius: 18,
     padding: 16,
     marginTop: 16,
   },
-  contactTitle: { fontSize: 14, fontWeight: '700', color: '#2B1A52' },
-  contactBody: { fontSize: 13, color: 'rgba(43,26,82,0.7)', lineHeight: 20, marginTop: 4 },
+  contactTitle: { fontSize: 14, fontWeight: '700', color: '#0F2218' },
+  contactBody: { fontSize: 13, color: 'rgba(15,34,24,0.7)', lineHeight: 20, marginTop: 4 },
 });
 

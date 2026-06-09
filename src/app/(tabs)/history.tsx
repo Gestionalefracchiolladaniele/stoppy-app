@@ -5,8 +5,8 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
 import { CalendarPicker, DateRange } from '@/components/CalendarPicker';
-import { NoitMini, noitVariantForMood } from '@/components/NoitMini';
-import { PurpleBg } from '@/components/PurpleBg';
+import { StoppyMini as NoitMini, stoppyVariantForMood as noitVariantForMood } from '@/components/StoppyMini';
+import { ForestBg as PurpleBg } from '@/components/ForestBg';
 import { SessionDetailModal } from '@/components/SessionDetailModal';
 import { TabBar } from '@/components/TabBar';
 import { useAuthStore } from '@/lib/auth-store';
@@ -174,7 +174,7 @@ export default function HistoryScreen() {
             </Pressable>
             <Pressable style={styles.addBtn} onPress={() => router.push('/session')}>
               <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-                <Path d="M9 4v10M4 9h10" stroke="rgba(92,62,156,0.7)" strokeWidth={2} strokeLinecap="round" />
+                <Path d="M9 4v10M4 9h10" stroke="rgba(31,107,77,0.7)" strokeWidth={2} strokeLinecap="round" />
               </Svg>
             </Pressable>
           </View>
@@ -215,7 +215,7 @@ export default function HistoryScreen() {
             <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
               <Path
                 d="M3 4h10M6.5 4V2.5h3V4M5 4l.6 9a1 1 0 001 .9h2.8a1 1 0 001-.9L11 4"
-                stroke={selectMode ? '#4A2A80' : 'rgba(255,255,255,0.85)'}
+                stroke={selectMode ? '#1A8044' : 'rgba(255,255,255,0.85)'}
                 strokeWidth={1.6}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -231,7 +231,7 @@ export default function HistoryScreen() {
         <View style={styles.list}>
           {filtered.length === 0 ? (
             <PulseCard style={styles.emptyCard}>
-              <Text style={styles.emptyText}>No history yet. Your sessions with Noit will appear here.</Text>
+              <Text style={styles.emptyText}>No history yet. Your sessions with Stoppy will appear here.</Text>
             </PulseCard>
           ) : (
             filtered.map((s) => {
@@ -277,7 +277,7 @@ export default function HistoryScreen() {
                       <View style={styles.titleRow}>
                         <Text style={styles.modeIcon}>{isBreathe ? '🌬️' : '💬'}</Text>
                         <Text style={styles.itemTitle} numberOfLines={1}>
-                          {s.food || (isBreathe ? 'Breathing session' : 'Talked with Noit')}
+                          {s.trigger || (isBreathe ? 'Breathing session' : 'Talked with Stoppy')}
                         </Text>
                       </View>
                       <Text style={styles.preview} numberOfLines={2}>
@@ -293,7 +293,7 @@ export default function HistoryScreen() {
                       <Svg width={14} height={10} viewBox="0 0 14 10" fill="none" style={{ marginVertical: 2 }}>
                         <Path
                           d="M2 5 L11 5 M8 2 L11 5 L8 8"
-                          stroke="#7B5BA9"
+                          stroke="#38C97A"
                           strokeWidth={1.6}
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -323,7 +323,7 @@ function ModeTabBtn({ label, active, onPress }: { label: string; active: boolean
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#6A4AAC', overflow: 'hidden' },
+  screen: { flex: 1, backgroundColor: '#1F6B4D', overflow: 'hidden' },
   scroll: { flex: 1 },
   header: {
     paddingHorizontal: 22, paddingTop: 60, paddingBottom: 16,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   rt: { paddingVertical: 4, paddingHorizontal: 7, borderRadius: 9 },
   rtOn: { backgroundColor: 'rgba(255,255,255,0.9)' },
   rtText: { fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.55)' },
-  rtTextOn: { color: '#4A2A80' },
+  rtTextOn: { color: '#1A8044' },
   calBtn: {
     width: 32, height: 32, borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.14)',
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     borderColor: 'white',
   },
   modeTabText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.75)' },
-  modeTabTextOn: { color: '#4A2A80' },
+  modeTabTextOn: { color: '#1A8044' },
   trashTab: {
     width: 34, height: 34,
     borderRadius: 14,
@@ -401,19 +401,19 @@ const styles = StyleSheet.create({
   },
   date: {
     width: 44, height: 44, borderRadius: 14,
-    backgroundColor: 'rgba(92,62,156,0.12)',
+    backgroundColor: 'rgba(31,107,77,0.12)',
     alignItems: 'center', justifyContent: 'center',
   },
-  dN: { fontSize: 16, fontWeight: '700', color: '#5C3E9C', lineHeight: 18 },
-  dL: { fontSize: 9, fontWeight: '600', color: 'rgba(92,62,156,0.6)', textTransform: 'uppercase' },
+  dN: { fontSize: 16, fontWeight: '700', color: '#1A8044', lineHeight: 18 },
+  dL: { fontSize: 9, fontWeight: '600', color: 'rgba(31,107,77,0.6)', textTransform: 'uppercase' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  itemTitle: { fontSize: 14, fontWeight: '600', color: '#2B1A52', textTransform: 'capitalize' },
-  preview: { fontSize: 12.5, color: 'rgba(43,26,82,0.52)', marginTop: 3, lineHeight: 17 },
+  itemTitle: { fontSize: 14, fontWeight: '600', color: '#0F2218', textTransform: 'capitalize' },
+  preview: { fontSize: 12.5, color: 'rgba(15,34,24,0.52)', marginTop: 3, lineHeight: 17 },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
-  dur: { fontSize: 11, color: 'rgba(43,26,82,0.4)', fontWeight: '500' },
+  dur: { fontSize: 11, color: 'rgba(15,34,24,0.4)', fontWeight: '500' },
   moodCol: { alignItems: 'center', justifyContent: 'center', minWidth: 38 },
   emptyCard: { backgroundColor: 'rgba(255,255,255,0.88)', borderRadius: 22, padding: 30, alignItems: 'center' },
-  emptyText: { color: 'rgba(43,26,82,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 21 },
+  emptyText: { color: 'rgba(15,34,24,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 21 },
   selectBar: {
     marginHorizontal: 18,
     marginBottom: 10,
@@ -445,20 +445,20 @@ const styles = StyleSheet.create({
   itemSelected: {
     backgroundColor: 'rgba(255,255,255,0.98)',
     borderWidth: 2,
-    borderColor: '#7B5BA9',
+    borderColor: '#38C97A',
   },
   checkbox: {
     width: 22,
     height: 22,
     borderRadius: 7,
     borderWidth: 1.8,
-    borderColor: 'rgba(92,62,156,0.35)',
+    borderColor: 'rgba(31,107,77,0.35)',
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxOn: {
-    backgroundColor: '#7B5BA9',
-    borderColor: '#7B5BA9',
+    backgroundColor: '#38C97A',
+    borderColor: '#38C97A',
   },
 });

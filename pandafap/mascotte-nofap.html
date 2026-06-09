@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mascotte — NoFap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  min-height: 100vh;
+  background: #060C08;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  padding: 60px 40px;
+}
+.bg-glow {
+  position: fixed; width: 720px; height: 720px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(56,201,122,0.13) 0%, rgba(31,107,77,0.05) 44%, transparent 70%);
+  top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none;
+}
+.label {
+  font-size:11px; font-weight:600; letter-spacing:4px;
+  text-transform:uppercase; color:rgba(56,201,122,0.55); margin-bottom:48px;
+}
+
+/* ── Animations ── */
+@keyframes cFloat      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-13px)} }
+@keyframes cBlink      { 0%,84%,100%{transform:scaleY(0.02);opacity:0} 89%,92%{transform:scaleY(1);opacity:1} 96%{transform:scaleY(0.02);opacity:0} }
+@keyframes cBambooSway { 0%,100%{transform:rotate(3.5deg)} 50%{transform:rotate(1deg)} }
+
+.c-float       { animation: cFloat 4.2s ease-in-out infinite; }
+.c-blink-l     { animation: cBlink 5.5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+.c-blink-r     { animation: cBlink 5.5s ease-in-out infinite 0.14s; transform-box:fill-box; transform-origin:center; }
+.c-bamboo      { animation: cBambooSway 3.8s ease-in-out infinite; transform-origin:163px 262px; }
+
+/* ── Palette ── */
+.palette-section { margin-top:60px; text-align:center; }
+.pal-title { font-size:10px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.2); margin-bottom:22px; }
+.palette   { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
+.swatch    { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.sw-color  { width:60px; height:60px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); }
+.sw-name   { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:rgba(255,255,255,0.3); }
+.sw-hex    { font-size:11px; font-weight:500; color:rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="label">Mascotte · NoFap</div>
+
+<svg width="214" height="448" viewBox="0 0 220 460" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- Head & body volume gradient (light top-left → cream bottom-right) -->
+  <radialGradient id="rBodyG" cx="34%" cy="28%" r="68%">
+    <stop offset="0%"   stop-color="#FFFFFF"/>
+    <stop offset="60%"  stop-color="#F7F2EA"/>
+    <stop offset="100%" stop-color="#ECE4D6"/>
+  </radialGradient>
+  <!-- Tummy slightly warmer -->
+  <radialGradient id="rTumG" cx="48%" cy="36%" r="60%">
+    <stop offset="0%"   stop-color="#FFFFFF"/>
+    <stop offset="100%" stop-color="#EDE6DA"/>
+  </radialGradient>
+  <!-- Bamboo A (lighter segment) -->
+  <linearGradient id="rBamA" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%"   stop-color="#8ED84A"/>
+    <stop offset="38%"  stop-color="#60AC2E"/>
+    <stop offset="100%" stop-color="#3C7215"/>
+  </linearGradient>
+  <!-- Bamboo B (darker segment) -->
+  <linearGradient id="rBamB" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%"   stop-color="#72BC36"/>
+    <stop offset="38%"  stop-color="#4C9020"/>
+    <stop offset="100%" stop-color="#2C6010"/>
+  </linearGradient>
+  <!-- Bamboo node -->
+  <linearGradient id="rNodeG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#3E8C1A"/>
+    <stop offset="100%" stop-color="#246010"/>
+  </linearGradient>
+  <!-- Soft drop shadow on head/body -->
+  <filter id="rShdw" x="-28%" y="-12%" width="168%" height="148%">
+    <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(0,0,0,0.42)"/>
+  </filter>
+  <!-- Lighter bamboo shadow -->
+  <filter id="rBShdw" x="-30%" y="-5%" width="200%" height="118%">
+    <feDropShadow dx="-3" dy="2" stdDeviation="4" flood-color="rgba(0,0,0,0.28)"/>
+  </filter>
+</defs>
+
+<g class="c-float">
+
+  <!-- Ground glow -->
+  <ellipse cx="105" cy="449" rx="58" ry="8" fill="rgba(56,201,122,0.17)"/>
+
+  <!-- ════ BAMBOO (behind everything) ════ -->
+  <g class="c-bamboo" filter="url(#rBShdw)">
+    <!-- Seg 1 --> <rect x="157" y="22"  width="12" height="50" rx="3.5" fill="url(#rBamA)"/>
+    <!-- Node 1 --> <rect x="154" y="72"  width="18" height="7"  rx="3" fill="url(#rNodeG)"/>
+                    <rect x="154" y="72"  width="18" height="2.2" rx="1" fill="rgba(255,255,255,0.22)"/>
+    <!-- Leaf 1 — upper left -->
+    <line x1="157" y1="76" x2="139" y2="59" stroke="#2C6810" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="130" cy="52" rx="17" ry="5.5" fill="#60AC2E" transform="rotate(-41,130,52)"/>
+    <line x1="144"  y1="64" x2="120" y2="48" stroke="#3C7215" stroke-width="0.9" stroke-linecap="round" opacity=".45"/>
+
+    <!-- Seg 2 --> <rect x="157" y="79"  width="12" height="50" rx="3.5" fill="url(#rBamB)"/>
+    <!-- Node 2 --> <rect x="154" y="129" width="18" height="7"  rx="3" fill="url(#rNodeG)"/>
+                    <rect x="154" y="129" width="18" height="2.2" rx="1" fill="rgba(255,255,255,0.22)"/>
+    <!-- Seg 3 --> <rect x="157" y="136" width="12" height="50" rx="3.5" fill="url(#rBamA)"/>
+    <!-- Node 3 --> <rect x="154" y="186" width="18" height="7"  rx="3" fill="url(#rNodeG)"/>
+                    <rect x="154" y="186" width="18" height="2.2" rx="1" fill="rgba(255,255,255,0.22)"/>
+    <!-- Leaf 2 — right side -->
+    <line x1="169" y1="190" x2="187" y2="174" stroke="#2C6810" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="195" cy="167" rx="17" ry="5.5" fill="#4C9020" transform="rotate(37,195,167)"/>
+    <line x1="187"  y1="174" x2="205" y2="161" stroke="#3C7215" stroke-width="0.9" stroke-linecap="round" opacity=".45"/>
+
+    <!-- Seg 4 --> <rect x="157" y="193" width="12" height="50" rx="3.5" fill="url(#rBamB)"/>
+    <!-- Node 4 --> <rect x="154" y="243" width="18" height="7"  rx="3" fill="url(#rNodeG)"/>
+                    <rect x="154" y="243" width="18" height="2.2" rx="1" fill="rgba(255,255,255,0.22)"/>
+    <!-- Seg 5 --> <rect x="157" y="250" width="12" height="50" rx="3.5" fill="url(#rBamA)"/>
+    <!-- Node 5 --> <rect x="154" y="300" width="18" height="7"  rx="3" fill="url(#rNodeG)"/>
+                    <rect x="154" y="300" width="18" height="2.2" rx="1" fill="rgba(255,255,255,0.22)"/>
+    <!-- Seg 6 --> <rect x="157" y="307" width="12" height="50" rx="3.5" fill="url(#rBamB)"/>
+    <!-- Node 6 --> <rect x="154" y="357" width="18" height="7"  rx="3" fill="url(#rNodeG)"/>
+                    <rect x="154" y="357" width="18" height="2.2" rx="1" fill="rgba(255,255,255,0.22)"/>
+    <!-- Seg 7 --> <rect x="157" y="364" width="12" height="52" rx="3.5" fill="url(#rBamA)"/>
+    <!-- Glossy highlight stripe -->
+    <rect x="160" y="22" width="3.5" height="394" rx="1.8" fill="rgba(255,255,255,0.26)"/>
+  </g>
+
+  <!-- ════ LEGS ════ -->
+  <ellipse cx="82"  cy="378" rx="30" ry="22" fill="#0F0F0F"/>
+  <ellipse cx="78"  cy="394" rx="19" ry="8"  fill="#1C1C1C"/>
+  <ellipse cx="124" cy="378" rx="30" ry="22" fill="#0F0F0F"/>
+  <ellipse cx="120" cy="394" rx="19" ry="8"  fill="#1C1C1C"/>
+
+  <!-- ════ BODY ════ -->
+  <ellipse cx="100" cy="308" rx="63" ry="74" fill="url(#rBodyG)" filter="url(#rShdw)"/>
+  <!-- Tummy -->
+  <ellipse cx="100" cy="318" rx="38" ry="52" fill="url(#rTumG)"/>
+  <!-- Neck depth shadow -->
+  <ellipse cx="100" cy="237" rx="38" ry="7"  fill="rgba(0,0,0,0.07)"/>
+
+  <!-- ════ LEFT ARM (relaxed, hanging) ════ -->
+  <ellipse cx="40" cy="294" rx="20" ry="42" fill="#0F0F0F" transform="rotate(-20,40,294)"/>
+  <!-- Left paw -->
+  <ellipse cx="27" cy="330" rx="17" ry="12" fill="#0F0F0F"/>
+  <!-- Left toes -->
+  <circle cx="18" cy="337" r="5.2" fill="#0F0F0F"/>
+  <circle cx="27" cy="340" r="5.2" fill="#0F0F0F"/>
+  <circle cx="36" cy="337" r="5.2" fill="#0F0F0F"/>
+  <ellipse cx="23" cy="326" rx="6" ry="3.5" fill="rgba(255,255,255,0.05)"/>
+
+  <!-- ════ RIGHT ARM (gripping bamboo) ════ -->
+  <ellipse cx="158" cy="272" rx="18" ry="39" fill="#0F0F0F" transform="rotate(5,158,272)"/>
+  <!-- Palm/wrist at grip point — placed over bamboo to create grip illusion -->
+  <ellipse cx="161" cy="255" rx="13" ry="11" fill="#0F0F0F"/>
+  <!-- 3 fingers visible on OUTER side of bamboo (right side, curling around) -->
+  <ellipse cx="173" cy="247" rx="5.5" ry="8" fill="#0F0F0F" transform="rotate(-14,173,247)"/>
+  <ellipse cx="174" cy="260" rx="5.5" ry="8" fill="#0F0F0F"/>
+  <ellipse cx="173" cy="273" rx="5.5" ry="8" fill="#0F0F0F" transform="rotate(14,173,273)"/>
+  <!-- Fingertip highlights (tiny detail) -->
+  <ellipse cx="178" cy="246" rx="2" ry="3" fill="rgba(255,255,255,0.06)" transform="rotate(-14,178,246)"/>
+  <ellipse cx="179" cy="260" rx="2" ry="3" fill="rgba(255,255,255,0.06)"/>
+  <ellipse cx="178" cy="274" rx="2" ry="3" fill="rgba(255,255,255,0.06)" transform="rotate(14,178,274)"/>
+
+  <!-- ════ EARS (drawn before head — head covers base) ════ -->
+  <circle cx="44"  cy="92"  r="27" fill="#0F0F0F"/>
+  <circle cx="156" cy="92"  r="27" fill="#0F0F0F"/>
+  <!-- Inner ear -->
+  <circle cx="44"  cy="92"  r="17" fill="#1A1A1A"/>
+  <circle cx="156" cy="92"  r="17" fill="#1A1A1A"/>
+  <!-- Ear sheen -->
+  <ellipse cx="40"  cy="86" rx="6" ry="8"  fill="rgba(255,255,255,0.05)"/>
+  <ellipse cx="152" cy="86" rx="6" ry="8"  fill="rgba(255,255,255,0.05)"/>
+
+  <!-- ════ HEAD ════ -->
+  <circle cx="100" cy="152" r="76" fill="url(#rBodyG)" filter="url(#rShdw)"/>
+
+  <!-- ════ EYEBROWS (focused, disciplined) ════ -->
+  <path d="M 61 131 Q 76 124 90 129" stroke="#0F0F0F" stroke-width="4.2" fill="none" stroke-linecap="round"/>
+  <path d="M 110 129 Q 124 124 139 131" stroke="#0F0F0F" stroke-width="4.2" fill="none" stroke-linecap="round"/>
+
+  <!-- ════ EYE PATCHES (natural panda — wide, angled) ════ -->
+  <ellipse cx="75"  cy="158" rx="29" ry="22" fill="#0F0F0F" transform="rotate(-12,75,158)"/>
+  <ellipse cx="125" cy="158" rx="29" ry="22" fill="#0F0F0F" transform="rotate(12,125,158)"/>
+
+  <!-- ════ WHITE EYES ════ -->
+  <circle cx="75"  cy="157" r="17" fill="#FFFFFF"/>
+  <circle cx="125" cy="157" r="17" fill="#FFFFFF"/>
+
+  <!-- ════ PUPILS ════ -->
+  <circle cx="77"  cy="159" r="10" fill="#0F0F0F"/>
+  <circle cx="127" cy="159" r="10" fill="#0F0F0F"/>
+  <!-- Warm dark-green iris glint — makes eyes feel alive -->
+  <circle cx="77"  cy="159" r="5.8" fill="#1C3E24"/>
+  <circle cx="127" cy="159" r="5.8" fill="#1C3E24"/>
+
+  <!-- ════ HIGHLIGHTS ════ -->
+  <circle cx="71"  cy="150" r="5.2" fill="rgba(255,255,255,0.96)"/>
+  <circle cx="121" cy="150" r="5.2" fill="rgba(255,255,255,0.96)"/>
+  <circle cx="81"  cy="165" r="2.4" fill="rgba(255,255,255,0.52)"/>
+  <circle cx="131" cy="165" r="2.4" fill="rgba(255,255,255,0.52)"/>
+
+  <!-- ════ BLINK LIDS ════ -->
+  <ellipse class="c-blink-l" cx="75"  cy="157" rx="17" ry="17" fill="#0F0F0F"/>
+  <ellipse class="c-blink-r" cx="125" cy="157" rx="17" ry="17" fill="#0F0F0F"/>
+
+  <!-- ════ CHEEK BLUSH ════ -->
+  <ellipse cx="55"  cy="183" rx="17" ry="10" fill="rgba(255,148,128,0.27)"/>
+  <ellipse cx="145" cy="183" rx="17" ry="10" fill="rgba(255,148,128,0.27)"/>
+
+  <!-- ════ NOSE ════ -->
+  <ellipse cx="100" cy="191" rx="9"  ry="6.5" fill="#0F0F0F"/>
+  <ellipse cx="98"  cy="188" rx="3.5" ry="2.4" fill="rgba(255,255,255,0.3)"/>
+
+  <!-- ════ MOUTH ════ -->
+  <path d="M 86 208 Q 100 226 114 208" stroke="#0F0F0F" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+  <circle cx="86"  cy="208" r="2.2" fill="rgba(0,0,0,0.22)"/>
+  <circle cx="114" cy="208" r="2.2" fill="rgba(0,0,0,0.22)"/>
+
+</g>
+</svg>
+
+<!-- ════ PALETTE ════ -->
+<div class="palette-section">
+  <div class="pal-title">Palette Colori</div>
+  <div class="palette">
+    <div class="swatch">
+      <div class="sw-color" style="background:#060C08;border-color:rgba(255,255,255,0.14);"></div>
+      <div class="sw-name">Fondo</div><div class="sw-hex">#060C08</div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:#1F6B4D;"></div>
+      <div class="sw-name">Verde</div><div class="sw-hex">#1F6B4D</div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:#38C97A;"></div>
+      <div class="sw-name">Menta</div><div class="sw-hex">#38C97A</div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:#2B7DB8;"></div>
+      <div class="sw-name">Azzurro</div><div class="sw-hex">#2B7DB8</div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:#60AC2E;"></div>
+      <div class="sw-name">Bambù</div><div class="sw-hex">#60AC2E</div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:#F7F2EA;border-color:rgba(0,0,0,0.1);"></div>
+      <div class="sw-name">Crema</div><div class="sw-hex">#F7F2EA</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
